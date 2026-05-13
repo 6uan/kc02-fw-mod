@@ -1,0 +1,14 @@
+# Build output
+patched/DestBin.bin
+
+# System
+.DS_Store
+__pycache__/
+*.pyc
+
+# Firmware dumps (large binaries, keep outside repo)
+*.bin
+!themes/**/*.bmp
+
+# Temp files
+/tmp/
