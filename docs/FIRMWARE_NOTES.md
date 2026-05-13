@@ -39,6 +39,73 @@ open('DestBin.bin', 'wb').write(data)
 - Always keep original_firmware_backup.bin safe — it's your only recovery via SPI programmer
 - File can be < 4MB (padding to 4MB with 0xFF is safe but not required)
 
+## Flash #9 Failure Investigation (2026-05-13)
+
+### Symptom
+Camera stuck on boot screen with SD inserted. Never wrote to SPI flash.
+Removing SD restored Flash #8. Flash #9 was the first build without 2x2
+layout patching (reverted to stock 3x2).
+
+### Binary Analysis of DestBin.bin (MD5: e41ddcdb5ce681152a74fe0a9bab5c84)
+
+**Structurally valid — no corruption found:**
+- Header (0x0000-0x01FF): byte-for-byte identical to stock dump1.bin
+- Code section (0x0200-0x0D31FF): CRC32 match with stock (0xCCA5748A)
+- SFAT table (0x0D3200-0x0D350F): byte-for-byte identical to stock
+- Menu coord table (0x07E160): all 6 entries match stock
+- Menu asset table (0x07E178): all 6 entries match stock
+- Menu handler table (0x07DF08): all 6 entries match stock
+- Count/max_idx immediates: stock values (6/5) intact at all 8 offsets
+- Header checksum: verifies (sum mod 256 = 0)
+- No secondary CRC/hash found covering data section
+- Total changes: 1,661,942 bytes across 15,902 regions, ALL in asset data (0x0D3510+)
+
+**What changed between Flash #8 (SUCCESS) and Flash #9 (FAILED):**
+1. Layout patches removed (stock 3x2 vs patched 2x2)
+2. Boot screen JPEG modified (35_boot_screen_320x240.jpg)
+3. Menu icons modified (photo, video, gallery_stack, settings)
+4. Menu background JPEG modified (05_menu_bg_320x240.jpg)
+5. New music.bmp and games.bmp added (for 3x2 layout slots)
+6. games.bmp was 27,702 bytes (slot expects 27,704) — padded with 0x00
+
+**This violated the one-change-per-flash rule — 6 simultaneous changes.**
+
+### BMP Size Discrepancy
+
+Original firmware BMPs have file_size=27,704 in their BMP headers.
+Theme replacement BMPs have file_size=27,702. Both use identical header
+structures (14-byte file header + 40-byte BITMAPINFOHEADER = 54 data offset).
+The 2-byte difference is trailing padding in the originals:
+- Original: 54 + 27,648 pixels + 2 padding = 27,704
+- Theme: 54 + 27,648 pixels = 27,702
+
+music.bmp was manually padded to 27,704 (matching slot), games.bmp was not.
+build.py correctly zero-pads undersized assets, so both render identically.
+
+### Root Cause (CONFIRMED)
+
+**The 2x2 layout code patches broke the SD update routine.**
+
+Flash #10 confirmed: even flashing the unmodified stock dump1.bin (MD5 verified
+on SD card) fails when Flash #8 is on SPI. The camera cannot self-update via SD.
+
+The count patch at 0x002F6C (6→4) is ~108 bytes into the SD update routine
+(~0x002F00+). The value 6 is not exclusively a menu item count — it is shared
+by (or adjacent to) the update routine. Changing it to 4 corrupts update logic.
+
+This is the same class of failure as Flash #4 (code patches disabling SD updates),
+but more subtle: the immediate operand change was "verified safe" for menu
+rendering, but the same code offset serves double duty in the update routine.
+
+**2x2 layout via code patches is permanently ruled out.**
+
+### Recovery
+
+CH341A SPI programmer → flash original_firmware_backup.bin → stock 3x2 restored.
+Then proceed with asset-only modifications (no code section changes).
+
+---
+
 ## Menu Structure
 
 ### Main Menu Layout (0x07E160)

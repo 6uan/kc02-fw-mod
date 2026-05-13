@@ -1,14 +1,16 @@
 # Build output
-patched/DestBin.bin
+patched/
 
 # System
 .DS_Store
 __pycache__/
 *.pyc
 
-# Firmware dumps (large binaries, keep outside repo)
-*.bin
-!themes/**/*.bmp
+# Firmware dumps (users provide their own)
+firmware/*.bin
+
+# Extracted originals (copyrighted — re-extract with tools/extract_assets.py)
+originals/
 
 # Temp files
 /tmp/

@@ -24,12 +24,22 @@ import shutil
 import argparse
 import hashlib
 import json
+import re
 from pathlib import Path
 
 # ─── Paths ───
-PROJECT = Path("/Users/mac/Developer/kc02-fw-mod")
-DUMP = Path("/Users/mac/dump1.bin")
-BACKUP = Path("/Users/mac/original_firmware_backup.bin")
+PROJECT = Path(__file__).resolve().parent.parent
+
+def _find_dump():
+    if "KC02_DUMP" in os.environ:
+        return Path(os.environ["KC02_DUMP"])
+    for p in [PROJECT / "firmware" / "original.bin", Path.home() / "dump1.bin"]:
+        if p.exists():
+            return p
+    return PROJECT / "firmware" / "original.bin"
+
+DUMP = _find_dump()
+BACKUP = Path(os.environ.get("KC02_BACKUP", Path.home() / "original_firmware_backup.bin"))
 OUTPUT = PROJECT / "patched" / "DestBin.bin"
 
 # ─── Asset Slot Definitions ───
@@ -94,36 +104,36 @@ SLOTS = [
     (96, 0x304F69, 8120,  "jpg", "video_rec",       ["screen"]),
 
     # Settings selected (112x112 BMP)
-    (63, 0x24E5C2, 37688, "bmp", "white_balance_sel",   ["settings", "sel"]),
+    (63, 0x24E5C2, 37688, "bmp", "auto_power_off_sel",  ["settings", "sel"]),
     (64, 0x2578FA, 37688, "bmp", "date_time_sel",       ["settings", "sel"]),
-    (65, 0x260C32, 37688, "bmp", "resolution_sel",      ["settings", "sel"]),
-    (66, 0x269F6A, 37688, "bmp", "storage_sel",         ["settings", "sel"]),
+    (65, 0x260C32, 37688, "bmp", "default_settings_sel", ["settings", "sel"]),
+    (66, 0x269F6A, 37688, "bmp", "format_sel",          ["settings", "sel"]),
     (67, 0x2732A2, 37688, "bmp", "frequency_sel",       ["settings", "sel"]),
-    (68, 0x27C5DA, 37688, "bmp", "photo_mode_sel",      ["settings", "sel"]),
+    (68, 0x27C5DA, 37688, "bmp", "camera_resolution_sel", ["settings", "sel"]),
     (69, 0x285912, 37688, "bmp", "language_sel",         ["settings", "sel"]),
-    (70, 0x28EC4A, 37688, "bmp", "video_mode_sel",      ["settings", "sel"]),
-    (71, 0x297F82, 37688, "bmp", "print_sel",           ["settings", "sel"]),
-    (72, 0x2A12BA, 37688, "bmp", "print_style_sel",     ["settings", "sel"]),
-    (73, 0x2AA5F2, 37688, "bmp", "brightness_sel",      ["settings", "sel"]),
-    (74, 0x2B392A, 37688, "bmp", "gallery_sel",         ["settings", "sel"]),
-    (75, 0x2BCC62, 37688, "bmp", "info_sel",            ["settings", "sel"]),
-    (76, 0x2C5F9A, 37688, "bmp", "file_browser_sel",    ["settings", "sel"]),
+    (70, 0x28EC4A, 37688, "bmp", "cyclic_record_sel",   ["settings", "sel"]),
+    (71, 0x297F82, 37688, "bmp", "print_density_sel",   ["settings", "sel"]),
+    (72, 0x2A12BA, 37688, "bmp", "print_modes_sel",     ["settings", "sel"]),
+    (73, 0x2AA5F2, 37688, "bmp", "screen_savers_sel",   ["settings", "sel"]),
+    (74, 0x2B392A, 37688, "bmp", "date_stamp_sel",      ["settings", "sel"]),
+    (75, 0x2BCC62, 37688, "bmp", "version_sel",         ["settings", "sel"]),
+    (76, 0x2C5F9A, 37688, "bmp", "video_resolution_sel", ["settings", "sel"]),
     (77, 0x2CF2D2, 37688, "bmp", "volume_sel",          ["settings", "sel"]),
 
     # Settings unselected (64x64 BMP)
-    (78, 0x2D860A, 12344, "bmp", "white_balance_unsel", ["settings", "unsel"]),
+    (78, 0x2D860A, 12344, "bmp", "auto_power_off_unsel", ["settings", "unsel"]),
     (79, 0x2DB642, 12344, "bmp", "date_time_unsel",     ["settings", "unsel"]),
-    (80, 0x2DE67A, 12344, "bmp", "resolution_unsel",    ["settings", "unsel"]),
-    (81, 0x2E16B2, 12344, "bmp", "storage_unsel",       ["settings", "unsel"]),
+    (80, 0x2DE67A, 12344, "bmp", "default_settings_unsel", ["settings", "unsel"]),
+    (81, 0x2E16B2, 12344, "bmp", "format_unsel",        ["settings", "unsel"]),
     (82, 0x2E46EA, 12344, "bmp", "frequency_unsel",     ["settings", "unsel"]),
-    (83, 0x2E7722, 12344, "bmp", "photo_mode_unsel",    ["settings", "unsel"]),
+    (83, 0x2E7722, 12344, "bmp", "camera_resolution_unsel", ["settings", "unsel"]),
     (84, 0x2EA75A, 12344, "bmp", "language_unsel",       ["settings", "unsel"]),
-    (85, 0x2ED792, 12344, "bmp", "video_mode_unsel",    ["settings", "unsel"]),
-    (86, 0x2F07CA, 12344, "bmp", "print_unsel",         ["settings", "unsel"]),
-    (87, 0x2F3802, 12344, "bmp", "brightness_unsel",    ["settings", "unsel"]),
-    (88, 0x2F683A, 12344, "bmp", "gallery_unsel",       ["settings", "unsel"]),
-    (89, 0x2F9872, 12344, "bmp", "info_unsel",          ["settings", "unsel"]),
-    (90, 0x2FC8AA, 12344, "bmp", "file_browser_unsel",  ["settings", "unsel"]),
+    (85, 0x2ED792, 12344, "bmp", "cyclic_record_unsel", ["settings", "unsel"]),
+    (86, 0x2F07CA, 12344, "bmp", "print_density_unsel", ["settings", "unsel"]),
+    (87, 0x2F3802, 12344, "bmp", "screen_savers_unsel", ["settings", "unsel"]),
+    (88, 0x2F683A, 12344, "bmp", "date_stamp_unsel",    ["settings", "unsel"]),
+    (89, 0x2F9872, 12344, "bmp", "version_unsel",       ["settings", "unsel"]),
+    (90, 0x2FC8AA, 12344, "bmp", "video_resolution_unsel", ["settings", "unsel"]),
     (91, 0x2FF8E2, 12344, "bmp", "volume_unsel",        ["settings", "unsel"]),
 ]
 
@@ -137,25 +147,17 @@ MENU_LABEL_OFFSETS = {
     "Games":    0x239C82,
 }
 
-# ─── Menu layout code patches ───
-MENU_LAYOUT = {
+# ─── Menu layout reference (stock 3x2) ───
+# The firmware's native layout is 3x2 with 6 menu items.
+# No patching needed — we use the stock layout and replace assets only.
+MENU_LAYOUT_REF = {
     "coord_table":  0x07E160,   # 6 × (u16 x, u16 y)
     "asset_table":  0x07E178,   # 6 × u32 asset_index
     "handler_table": 0x07DF08,  # 6 × u32 function_ptr
-    "count_offsets": [0x002F6C, 0x003B5C, 0x003E64, 0x004030, 0x004094, 0x004288],
-    "max_idx_offsets": [0x004064, 0x00407C],
-    "3x2": {
-        "coords": [(12,18),(112,18),(212,18),(12,126),(112,126),(212,126)],
-        "assets": [0x22, 0x25, 0x1F, 0x23, 0x21, 0x24],
-        "handlers": [0x0200411C, 0x02003E74, 0x02003EF0, 0x02003F90, 0x02004014, 0x02004098],
-        "count": 6, "max_idx": 5,
-    },
-    "2x2": {
-        "coords": [(32,16),(192,16),(32,128),(192,128)],
-        "assets": [0x22, 0x25, 0x23, 0x24],  # Photo, Video, Playback, Settings
-        "handlers": [0x0200411C, 0x02003E74, 0x02003F90, 0x02004098],
-        "count": 4, "max_idx": 3,
-    },
+    "coords": [(12,18),(112,18),(212,18),(12,126),(112,126),(212,126)],
+    "assets": [0x22, 0x25, 0x1F, 0x23, 0x21, 0x24],
+    "handlers": [0x0200411C, 0x02003E74, 0x02003EF0, 0x02003F90, 0x02004014, 0x02004098],
+    "count": 6, "max_idx": 5,
 }
 
 # ─── Name alias mapping (generated asset filenames → slot names) ───
@@ -164,58 +166,235 @@ ALIASES = {
     "02_video_96":                "video",
     "03_gallery_stack_96":        "playback",
     "04_settings_96":             "settings",
-    "05_menu_bg_320x240":         "menu_bg",
-    "06_white_balance_selected_112":  "white_balance_sel",
-    "07_date_time_selected_112":      "date_time_sel",
-    "08_resolution_selected_112":     "resolution_sel",
-    "09_storage_selected_112":        "storage_sel",
-    "10_frequency_selected_112":      "frequency_sel",
-    "11_photo_mode_selected_112":     "photo_mode_sel",
-    "12_language_selected_112":       "language_sel",
-    "13_video_mode_selected_112":     "video_mode_sel",
-    "14_print_selected_112":          "print_sel",
-    "15_print_style_selected_112":    "print_style_sel",
-    "16_brightness_selected_112":     "brightness_sel",
-    "17_gallery_selected_112":        "gallery_sel",
-    "18_info_selected_112":           "info_sel",
-    "19_file_browser_selected_112":   "file_browser_sel",
-    "20_volume_selected_112":         "volume_sel",
-    "21_white_balance_unselected_64": "white_balance_unsel",
-    "22_date_time_unselected_64":     "date_time_unsel",
-    "23_resolution_unselected_64":    "resolution_unsel",
-    "24_storage_unselected_64":       "storage_unsel",
-    "25_frequency_unselected_64":     "frequency_unsel",
-    "26_photo_mode_unselected_64":    "photo_mode_unsel",
-    "27_language_unselected_64":      "language_unsel",
-    "28_video_mode_unselected_64":    "video_mode_unsel",
-    "29_print_unselected_64":         "print_unsel",
-    "30_brightness_unselected_64":    "brightness_unsel",
-    "31_gallery_unselected_64":       "gallery_unsel",
-    "32_info_unselected_64":          "info_unsel",
-    "33_file_browser_unselected_64":  "file_browser_unsel",
-    "34_volume_unselected_64":        "volume_unsel",
-    "35_boot_screen_320x240":         "boot_screen",
-    "36_insert_sd_320x240":           "insert_sd",
-    "37_video_rec_320x240":           "video_rec",
-    "38_digit_0_16x32": "digit_0", "39_digit_1_16x32": "digit_1",
-    "40_digit_2_16x32": "digit_2", "41_digit_3_16x32": "digit_3",
-    "42_digit_4_16x32": "digit_4", "43_digit_5_16x32": "digit_5",
-    "44_digit_6_16x32": "digit_6", "45_digit_7_16x32": "digit_7",
-    "46_digit_8_16x32": "digit_8", "47_digit_9_16x32": "digit_9",
-    "48_blank_16x32": "blank", "49_colon_16x32": "colon",
-    "50_slash_16x32": "slash",
-    "51_rewind_48x32": "rewind", "52_forward_48x32": "forward",
-    "53_bg_1_320x240": "bg_1", "54_bg_2_320x240": "bg_2",
-    "55_bg_3_320x240": "bg_3", "56_bg_4_320x240": "bg_4",
-    "57_frame_1_1280x720": "frame_1", "58_frame_2_1280x720": "frame_2",
-    "59_frame_3_1280x720": "frame_3", "60_frame_4_1280x720": "frame_4",
-    "61_frame_5_1280x720": "frame_5", "62_frame_6_1280x720": "frame_6",
-    "63_frame_7_1280x720": "frame_7", "64_frame_8_1280x720": "frame_8",
-    "65_frame_9_1280x720": "frame_9",
-    "66_game_placeholder_120": "game_1", "67_game_placeholder_120": "game_2",
-    "68_game_placeholder_120": "game_3", "69_game_placeholder_120": "game_4",
-    "70_game_placeholder_120": "game_5",
+    "05_music_96":                "music",
+    "06_games_96":                "games",
+    "07_menu_bg_320x240":         "menu_bg",
+    "08_auto_power_off_selected_112": "auto_power_off_sel",
+    "09_date_time_selected_112":      "date_time_sel",
+    "10_default_settings_selected_112": "default_settings_sel",
+    "11_format_selected_112":         "format_sel",
+    "12_frequency_selected_112":      "frequency_sel",
+    "13_camera_resolution_selected_112": "camera_resolution_sel",
+    "14_language_selected_112":       "language_sel",
+    "15_cyclic_record_selected_112":  "cyclic_record_sel",
+    "16_print_density_selected_112":  "print_density_sel",
+    "17_print_modes_selected_112":    "print_modes_sel",
+    "18_screen_savers_selected_112":  "screen_savers_sel",
+    "19_date_stamp_selected_112":     "date_stamp_sel",
+    "20_version_selected_112":        "version_sel",
+    "21_video_resolution_selected_112": "video_resolution_sel",
+    "22_volume_selected_112":         "volume_sel",
+    "23_auto_power_off_unselected_64": "auto_power_off_unsel",
+    "24_date_time_unselected_64":     "date_time_unsel",
+    "25_default_settings_unselected_64": "default_settings_unsel",
+    "26_format_unselected_64":        "format_unsel",
+    "27_frequency_unselected_64":     "frequency_unsel",
+    "28_camera_resolution_unselected_64": "camera_resolution_unsel",
+    "29_language_unselected_64":      "language_unsel",
+    "30_cyclic_record_unselected_64": "cyclic_record_unsel",
+    "31_print_density_unselected_64": "print_density_unsel",
+    "32_screen_savers_unselected_64": "screen_savers_unsel",
+    "33_date_stamp_unselected_64":    "date_stamp_unsel",
+    "34_version_unselected_64":       "version_unsel",
+    "35_video_resolution_unselected_64": "video_resolution_unsel",
+    "36_volume_unselected_64":        "volume_unsel",
+    "37_boot_screen_320x240":         "boot_screen",
+    "38_insert_sd_320x240":           "insert_sd",
+    "39_video_rec_320x240":           "video_rec",
+    "40_digit_0_16x32": "digit_0", "41_digit_1_16x32": "digit_1",
+    "42_digit_2_16x32": "digit_2", "43_digit_3_16x32": "digit_3",
+    "44_digit_4_16x32": "digit_4", "45_digit_5_16x32": "digit_5",
+    "46_digit_6_16x32": "digit_6", "47_digit_7_16x32": "digit_7",
+    "48_digit_8_16x32": "digit_8", "49_digit_9_16x32": "digit_9",
+    "50_blank_16x32": "blank", "51_colon_16x32": "colon",
+    "52_slash_16x32": "slash",
+    "53_rewind_48x32": "rewind", "54_forward_48x32": "forward",
+    "55_bg_1_320x240": "bg_1", "56_bg_2_320x240": "bg_2",
+    "57_bg_3_320x240": "bg_3", "58_bg_4_320x240": "bg_4",
+    "59_frame_1_1280x720": "frame_1", "60_frame_2_1280x720": "frame_2",
+    "61_frame_3_1280x720": "frame_3", "62_frame_4_1280x720": "frame_4",
+    "63_frame_5_1280x720": "frame_5", "64_frame_6_1280x720": "frame_6",
+    "65_frame_7_1280x720": "frame_7", "66_frame_8_1280x720": "frame_8",
+    "67_frame_9_1280x720": "frame_9",
+    "68_game_placeholder_120": "game_1", "69_game_placeholder_120": "game_2",
+    "70_game_placeholder_120": "game_3", "71_game_placeholder_120": "game_4",
+    "72_game_placeholder_120": "game_5",
 }
+
+
+# ─── Expected dimensions per tag (width, height) ───
+EXPECTED_DIMS = {
+    "menu_icon": (96, 96),
+    "sel":       (112, 112),
+    "unsel":     (64, 64),
+    "game":      (120, 120),
+    "control":   (48, 32),
+    "digit":     (16, 32),
+    "frame":     (1280, 720),
+    "bg":        (320, 240),
+    "screen":    (320, 240),
+    "menu":      (320, 240),
+}
+
+
+def validate_asset(filepath, slot):
+    """Check asset format/dimensions. Returns list of warning strings (empty = all good)."""
+    idx, offset, expected_size, fmt, name, tags = slot
+    warnings = []
+    data = filepath.read_bytes()
+
+    if len(data) > expected_size:
+        warnings.append(f"oversized {len(data):,}B > {expected_size:,}B (will truncate)")
+    elif len(data) < expected_size and fmt == "bmp":
+        warnings.append(f"undersized {len(data):,}B < {expected_size:,}B (will zero-pad {expected_size - len(data)}B)")
+
+    if fmt == "bmp":
+        if len(data) < 54:
+            warnings.append("BMP too small to have valid header")
+            return warnings
+        if data[0:2] != b'BM':
+            warnings.append("missing BM magic — not a valid BMP")
+            return warnings
+        bpp = struct.unpack_from('<H', data, 28)[0]
+        if bpp != 24:
+            warnings.append(f"color depth {bpp}bpp, expected 24bpp")
+        compression = struct.unpack_from('<I', data, 30)[0]
+        if compression != 0:
+            warnings.append(f"compressed (type {compression}), expected uncompressed")
+        w = struct.unpack_from('<i', data, 18)[0]
+        h = abs(struct.unpack_from('<i', data, 22)[0])
+        for tag in reversed(tags):
+            if tag in EXPECTED_DIMS:
+                ew, eh = EXPECTED_DIMS[tag]
+                if (w, h) != (ew, eh):
+                    warnings.append(f"dimensions {w}x{h}, expected {ew}x{eh}")
+                break
+
+    elif fmt == "jpg":
+        if data[0:2] != b'\xff\xd8':
+            warnings.append("missing JPEG SOI marker")
+        if data[-2:] != b'\xff\xd9':
+            warnings.append("missing JPEG EOI marker")
+
+    return warnings
+
+
+MENU_BG_CONFIG = "menu_bg_offsets.json"
+MENU_ICON_NAMES = ["photo", "video", "music", "playback", "games", "settings"]
+
+
+def load_menu_bg_offsets(asset_dir):
+    """Load per-icon position offsets from config. Returns dict of {name: (dx, dy)}."""
+    config_path = Path(asset_dir) / MENU_BG_CONFIG
+    offsets = {name: (0, 0) for name in MENU_ICON_NAMES}
+    if config_path.exists():
+        data = json.loads(config_path.read_text())
+        for name in MENU_ICON_NAMES:
+            if name in data:
+                offsets[name] = (data[name].get("dx", 0), data[name].get("dy", 0))
+    return offsets
+
+
+def save_menu_bg_offsets(asset_dir, offsets, effect=None):
+    """Save per-icon position offsets and effect to config."""
+    config_path = Path(asset_dir) / MENU_BG_CONFIG
+    data = {}
+    if effect and effect != "none":
+        data["effect"] = effect
+    for name in MENU_ICON_NAMES:
+        dx, dy = offsets.get(name, (0, 0))
+        if dx != 0 or dy != 0:
+            data[name] = {"dx": dx, "dy": dy}
+    config_path.write_text(json.dumps(data, indent=2) + "\n")
+
+
+MENU_BG_EFFECTS = ["none", "desaturate", "warm_tint", "cool_tint"]
+
+
+def load_menu_bg_effect(asset_dir):
+    config_path = Path(asset_dir) / MENU_BG_CONFIG
+    if config_path.exists():
+        data = json.loads(config_path.read_text())
+        return data.get("effect", "none")
+    return "none"
+
+
+def _apply_bg_effect(rgb_image, effect):
+    """Apply a whole-image color treatment to the final menu BG."""
+    from PIL import Image, ImageEnhance
+
+    if effect == "none":
+        return rgb_image
+
+    if effect == "desaturate":
+        return ImageEnhance.Color(rgb_image).enhance(0.35)
+
+    if effect == "warm_tint":
+        muted = ImageEnhance.Color(rgb_image).enhance(0.5)
+        tint = Image.new('RGB', rgb_image.size, (60, 30, 10))
+        return Image.blend(muted, tint, 0.15)
+
+    if effect == "cool_tint":
+        muted = ImageEnhance.Color(rgb_image).enhance(0.5)
+        tint = Image.new('RGB', rgb_image.size, (10, 20, 50))
+        return Image.blend(muted, tint, 0.15)
+
+    return rgb_image
+
+
+def generate_menu_bg(asset_dir, bg_color=(0, 0, 0), effect=None):
+    """Composite menu icons onto a background to create menu_bg JPEG."""
+    from PIL import Image
+
+    CHROMA_KEY = (140, 140, 140)  # #8C8C8C
+    WIDTH, HEIGHT = 320, 240
+    coords = MENU_LAYOUT_REF["coords"]
+    offsets = load_menu_bg_offsets(asset_dir)
+    if effect is None:
+        effect = load_menu_bg_effect(asset_dir)
+
+    matched = find_assets(asset_dir)
+
+    icons_layer = Image.new('RGBA', (WIDTH, HEIGHT), (0, 0, 0, 0))
+
+    placed = 0
+    for (x, y), name in zip(coords, MENU_ICON_NAMES):
+        if name not in matched:
+            print(f"  [SKIP] menu_bg: {name} icon not found")
+            continue
+        icon = Image.open(matched[name]).convert('RGBA')
+        pixels = icon.load()
+        for iy in range(icon.height):
+            for ix in range(icon.width):
+                r, g, b, a = pixels[ix, iy]
+                if (r, g, b) == CHROMA_KEY:
+                    pixels[ix, iy] = (0, 0, 0, 0)
+        dx, dy = offsets[name]
+        icons_layer.paste(icon, (x + dx, y + dy), icon)
+        placed += 1
+
+    bg = Image.new('RGBA', (WIDTH, HEIGHT), bg_color + (255,))
+    bg = Image.alpha_composite(bg, icons_layer)
+
+    output = Path(asset_dir) / "07_menu_bg_320x240.jpg"
+    rgb = _apply_bg_effect(bg.convert('RGB'), effect)
+    slot = next(s for s in SLOTS if s[4] == "menu_bg")
+    max_size = slot[2]
+
+    quality = 95
+    while quality > 10:
+        rgb.save(output, "JPEG", quality=quality, subsampling="4:2:0")
+        if output.stat().st_size <= max_size:
+            break
+        quality -= 5
+
+    size = output.stat().st_size
+    effect_note = f" [{effect}]" if effect != "none" else ""
+    print(f"  [OK] menu_bg generated — {placed} icons @ quality={quality}, {size:,}B / {max_size:,}B{effect_note}")
+    if any(d != (0, 0) for d in offsets.values()):
+        adjusted = [f"{n}({dx:+d},{dy:+d})" for n, (dx, dy) in offsets.items() if (dx, dy) != (0, 0)]
+        print(f"  [OK] offsets applied: {', '.join(adjusted)}")
+    return output
 
 
 def find_assets(asset_dir):
@@ -272,28 +451,36 @@ def build(args):
     matched = find_assets(asset_dir)
     slot_lookup = {s[4]: s for s in SLOTS}
 
-    print(f"Source:  {DUMP}")
+    print(f"\nSource:  {DUMP}")
     print(f"Assets:  {asset_dir}")
     print(f"Output:  {OUTPUT}")
     print(f"Matched: {len(matched)} / {len(SLOTS)} slots")
     print()
 
     patched = 0
-    errors = 0
+    patched_names = []
+    warn_count = 0
 
     for name, filepath in sorted(matched.items(), key=lambda x: slot_lookup.get(x[0], (999,))[0]):
         if name not in slot_lookup:
             print(f"  [SKIP] {filepath.name} — no matching slot")
             continue
 
-        idx, offset, expected_size, fmt, slot_name, tags = slot_lookup[name]
+        slot = slot_lookup[name]
+        idx, offset, expected_size, fmt, slot_name, tags = slot
+
+        # Validate asset
+        warnings = validate_asset(filepath, slot)
+        for w in warnings:
+            print(f"  [WARN] #{idx:02d} {name}: {w}")
+            warn_count += 1
+
         data = filepath.read_bytes()
 
         # Handle size mismatches
         if len(data) == expected_size:
             fw[offset:offset + expected_size] = data
         elif len(data) < expected_size:
-            # Pad BMPs with 0x00, JPEGs with 0xFF before EOI
             if fmt == "jpg" and data[-2:] == b'\xff\xd9':
                 pad = expected_size - len(data)
                 data = data[:-2] + b'\xff' * pad + b'\xff\xd9'
@@ -301,13 +488,15 @@ def build(args):
                 data = data + b'\x00' * (expected_size - len(data))
             fw[offset:offset + expected_size] = data
         elif len(data) > expected_size:
-            # Truncate (for BMP size variants like game_2)
             fw[offset:offset + expected_size] = data[:expected_size]
-            print(f"  [WARN] #{idx:02d} {name}: truncated {len(data)}→{expected_size}")
 
         if not args.dry_run:
             patched += 1
+            patched_names.append(name)
             print(f"  [OK] #{idx:02d} @ 0x{offset:06X} ({expected_size:,}B) ← {filepath.name}")
+
+    if warn_count:
+        print(f"\n  {warn_count} warning(s) — assets patched anyway")
 
     # Also patch boot_screen into slot 2 if only one boot screen provided
     if "boot_screen" in matched and "boot_screen_2" not in matched:
@@ -332,49 +521,6 @@ def build(args):
                 text_count += 1
                 print(f"  [OK] {label}: num_chars {old}→0 @ 0x{offset:06X}")
         print(f"  Removed {text_count} labels")
-
-    # Menu layout patch
-    if args.layout != "3x2":
-        layout = MENU_LAYOUT[args.layout]
-        print(f"\n--- Menu Layout → {args.layout} ---")
-
-        # Coordinates
-        for i, (x, y) in enumerate(layout["coords"]):
-            off = MENU_LAYOUT["coord_table"] + i * 4
-            struct.pack_into('<HH', fw, off, x, y)
-        # Zero out remaining coordinate slots
-        for i in range(len(layout["coords"]), 6):
-            off = MENU_LAYOUT["coord_table"] + i * 4
-            struct.pack_into('<HH', fw, off, 0, 0)
-        print(f"  [OK] Coordinates: {layout['coords']}")
-
-        # Asset indices
-        for i, asset in enumerate(layout["assets"]):
-            off = MENU_LAYOUT["asset_table"] + i * 4
-            struct.pack_into('<I', fw, off, asset)
-        for i in range(len(layout["assets"]), 6):
-            off = MENU_LAYOUT["asset_table"] + i * 4
-            struct.pack_into('<I', fw, off, 0)
-        print(f"  [OK] Asset indices: {[hex(a) for a in layout['assets']]}")
-
-        # Handlers
-        for i, handler in enumerate(layout["handlers"]):
-            off = MENU_LAYOUT["handler_table"] + i * 4
-            struct.pack_into('<I', fw, off, handler)
-        for i in range(len(layout["handlers"]), 6):
-            off = MENU_LAYOUT["handler_table"] + i * 4
-            struct.pack_into('<I', fw, off, 0)
-        print(f"  [OK] Handlers patched")
-
-        # Item count
-        for off in MENU_LAYOUT["count_offsets"]:
-            fw[off] = layout["count"]
-        print(f"  [OK] Count → {layout['count']} at {len(MENU_LAYOUT['count_offsets'])} locations")
-
-        # Max index
-        for off in MENU_LAYOUT["max_idx_offsets"]:
-            fw[off] = layout["max_idx"]
-        print(f"  [OK] Max index → {layout['max_idx']} at {len(MENU_LAYOUT['max_idx_offsets'])} locations")
 
     # Verify
     print(f"\n--- Verify ---")
@@ -421,6 +567,7 @@ def build(args):
         print(f"  SD card ejected — ready to flash")
 
 
+
 def list_slots(args):
     """Show all available slots."""
     print(f"{'#':>3} {'Offset':>10} {'Size':>8} {'Fmt':>4} {'Name':<25} {'Tags'}")
@@ -441,15 +588,21 @@ if __name__ == "__main__":
     build_p.add_argument("--assets", default=None, help="Override asset directory path")
     build_p.add_argument("--no-text", action="store_true", default=True, help="Remove menu text labels")
     build_p.add_argument("--keep-text", action="store_true", help="Keep menu text labels")
-    build_p.add_argument("--layout", choices=["2x2", "3x2"], default="2x2", help="Menu layout (default: 2x2)")
     build_p.add_argument("--dry-run", action="store_true")
     build_p.add_argument("--sd", action="store_true", help="Copy to SD card after build")
 
     list_p = sub.add_parser("list", help="List all asset slots")
 
+    menubg_p = sub.add_parser("gen-menu-bg", help="Generate menu background from current icons")
+    menubg_p.add_argument("--theme", default="modern_pixel_light", help="Theme directory name")
+    menubg_p.add_argument("--assets", default=None, help="Override asset directory path")
+
     args = parser.parse_args()
     if args.cmd == "list":
         list_slots(args)
+    elif args.cmd == "gen-menu-bg":
+        asset_dir = Path(args.assets) if args.assets else PROJECT / "themes" / args.theme / "firmware_exports"
+        generate_menu_bg(asset_dir)
     elif args.cmd == "build":
         if args.keep_text:
             args.no_text = False

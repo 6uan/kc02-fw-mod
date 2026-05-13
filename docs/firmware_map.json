@@ -1,0 +1,1978 @@
+{
+  "firmware": {
+    "file": "/Users/mac/dump1.bin",
+    "size": 4194304,
+    "md5": "7236c4c1bd3f12b1d85d33a9bebdf510",
+    "chip": "JieLi AC2546",
+    "arch": "pi32",
+    "flash_base": "0x02000000"
+  },
+  "regions": [
+    {
+      "start": "0x000000",
+      "end": "0x0001FF",
+      "size": 512,
+      "type": "header",
+      "name": "BLDR boot header"
+    },
+    {
+      "start": "0x000200",
+      "end": "0x0002FF",
+      "size": 256,
+      "type": "config",
+      "name": "SFC timing parameters"
+    },
+    {
+      "start": "0x000300",
+      "end": "0x0003FF",
+      "size": 256,
+      "type": "config",
+      "name": "SFAT config / flash header"
+    },
+    {
+      "start": "0x000400",
+      "end": "0x0025FF",
+      "size": 8704,
+      "type": "code",
+      "name": "Boot init code"
+    },
+    {
+      "start": "0x002600",
+      "end": "0x0C87FF",
+      "size": 811520,
+      "type": "code",
+      "name": "Application code"
+    },
+    {
+      "start": "0x0C8800",
+      "end": "0x0D31FF",
+      "size": 43520,
+      "type": "config",
+      "name": "Flash chip driver tables"
+    },
+    {
+      "start": "0x0D3200",
+      "end": "0x0D3510",
+      "size": 785,
+      "type": "sfat",
+      "name": "Asset table (SFAT)"
+    },
+    {
+      "start": "0x0D3510",
+      "end": "0x3071FF",
+      "size": 2309360,
+      "type": "assets",
+      "name": "Asset data (BMP/JPEG/WAV/raw)"
+    },
+    {
+      "start": "0x307200",
+      "end": "0x3FFFFF",
+      "size": 1019392,
+      "type": "free",
+      "name": "Erased flash (0xFF)"
+    }
+  ],
+  "known_tables": {
+    "menu_coord_table": {
+      "offset": "0x07E160",
+      "size": 24,
+      "description": "Menu icon coordinates (6 x u16 x, u16 y)"
+    },
+    "menu_asset_table": {
+      "offset": "0x07E178",
+      "size": 24,
+      "description": "Menu icon SFAT indices (6 x u32)"
+    },
+    "menu_handler_table": {
+      "offset": "0x07DF08",
+      "size": 24,
+      "description": "Menu item handler function pointers (6 x u32)"
+    }
+  },
+  "strings_in_code": [
+    {
+      "offset": "0x000304",
+      "text": "SFAT"
+    },
+    {
+      "offset": "0x002028",
+      "text": "01234"
+    },
+    {
+      "offset": "0x0022E8",
+      "text": "/.-,+*)('&%$#\"! ?>=<;:9876543210/.-,+*)('&%$#\"! ?>=<;:9876543210"
+    },
+    {
+      "offset": "0x002415",
+      "text": "1^oD[A"
+    },
+    {
+      "offset": "0x0319F3",
+      "text": "D. `"
+    },
+    {
+      "offset": "0x033F4F",
+      "text": "D0!`"
+    },
+    {
+      "offset": "0x059C27",
+      "text": "DFF`"
+    },
+    {
+      "offset": "0x07DE1C",
+      "text": "battery"
+    },
+    {
+      "offset": "0x07DE28",
+      "text": "ad-key"
+    },
+    {
+      "offset": "0x07DE2F",
+      "text": "sd-card"
+    },
+    {
+      "offset": "0x07DE42",
+      "text": "cmos-sensor"
+    },
+    {
+      "offset": "0x07DE52",
+      "text": "VIDEO/"
+    },
+    {
+      "offset": "0x07DE59",
+      "text": "PHOTO/"
+    },
+    {
+      "offset": "0x07DE60",
+      "text": "AUDIO/"
+    },
+    {
+      "offset": "0x07DE6B",
+      "text": ".AVI"
+    },
+    {
+      "offset": "0x07DE70",
+      "text": ".JPG"
+    },
+    {
+      "offset": "0x07DE79",
+      "text": ".WAV"
+    },
+    {
+      "offset": "0x07DE7E",
+      "text": ".MP3"
+    },
+    {
+      "offset": "0x07DE87",
+      "text": "DestBin.bin"
+    },
+    {
+      "offset": "0x07DE93",
+      "text": "upgrade failed!!!"
+    },
+    {
+      "offset": "0x07DEA5",
+      "text": "upgrade"
+    },
+    {
+      "offset": "0x07DF94",
+      "text": "exmend.bin"
+    },
+    {
+      "offset": "0x07DF9F",
+      "text": "329X_V1.0.0"
+    },
+    {
+      "offset": "0x07DFD8",
+      "text": "JRX_20220309"
+    },
+    {
+      "offset": "0x07DFE5",
+      "text": "SELFTEST.bin"
+    },
+    {
+      "offset": "0x07DFF2",
+      "text": "Photo Encode"
+    },
+    {
+      "offset": "0x07E059",
+      "text": "000000"
+    },
+    {
+      "offset": "0x07E060",
+      "text": "Play Back"
+    },
+    {
+      "offset": "0x07E072",
+      "text": "play back"
+    },
+    {
+      "offset": "0x07E07C",
+      "text": "Power Off"
+    },
+    {
+      "offset": "0x07E086",
+      "text": "MP3/"
+    },
+    {
+      "offset": "0x07E08B",
+      "text": "usb device"
+    },
+    {
+      "offset": "0x07E096",
+      "text": "Video Recorde"
+    },
+    {
+      "offset": "0x07E0BA",
+      "text": "))))))))"
+    },
+    {
+      "offset": "0x07E0C3",
+      "text": "charging"
+    },
+    {
+      "offset": "0x07E0CC",
+      "text": "usensor:"
+    },
+    {
+      "offset": "0x07E0D5",
+      "text": "offline"
+    },
+    {
+      "offset": "0x07E0DD",
+      "text": "usensor work:"
+    },
+    {
+      "offset": "0x07E0EF",
+      "text": "show off"
+    },
+    {
+      "offset": "0x07E0F8",
+      "text": "usensor eeprom:"
+    },
+    {
+      "offset": "0x07E108",
+      "text": "Gsensor:"
+    },
+    {
+      "offset": "0x07E111",
+      "text": "lcd:"
+    },
+    {
+      "offset": "0x07E116",
+      "text": " null"
+    },
+    {
+      "offset": "0x07E11C",
+      "text": "mic:"
+    },
+    {
+      "offset": "0x07E121",
+      "text": "tuning:"
+    },
+    {
+      "offset": "0x07E129",
+      "text": "battery:"
+    },
+    {
+      "offset": "0x07E136",
+      "text": "chip:"
+    },
+    {
+      "offset": "0x07E13C",
+      "text": "AX3292"
+    },
+    {
+      "offset": "0x07E143",
+      "text": "2025/12/12 V1.3"
+    },
+    {
+      "offset": "0x07E153",
+      "text": "Main menu"
+    },
+    {
+      "offset": "0x07E190",
+      "text": "Game menu"
+    },
+    {
+      "offset": "0x07E1C4",
+      "text": "Audio Player"
+    },
+    {
+      "offset": "0x07E1D1",
+      "text": "000/000"
+    },
+    {
+      "offset": "0x07E1D9",
+      "text": "Music List"
+    },
+    {
+      "offset": "0x07E1E4",
+      "text": "Setting menu"
+    },
+    {
+      "offset": "0x07E413",
+      "text": "]u7n"
+    },
+    {
+      "offset": "0x07E44A",
+      "text": "F.;+"
+    },
+    {
+      "offset": "0x07E4BF",
+      "text": "NGame"
+    },
+    {
+      "offset": "0x082C9C",
+      "text": "mempool err"
+    },
+    {
+      "offset": "0x082CA8",
+      "text": "memPool error information:"
+    },
+    {
+      "offset": "0x082CC7",
+      "text": "memPool blkSize:%d"
+    },
+    {
+      "offset": "0x082CDB",
+      "text": "memPool freeBlks:%d"
+    },
+    {
+      "offset": "0x082CF0",
+      "text": "memPool maxBlks:%d"
+    },
+    {
+      "offset": "0x082D04",
+      "text": "memPool minFreeBlks:%d"
+    },
+    {
+      "offset": "0x082E84",
+      "text": "sdram *saddr=0x%x,*eaddr=0x%x"
+    },
+    {
+      "offset": "0x082F50",
+      "text": "XOSC"
+    },
+    {
+      "offset": "0x082F56",
+      "text": "RC128k=0x%x"
+    },
+    {
+      "offset": "0x083102",
+      "text": "2.5Un"
+    },
+    {
+      "offset": "0x083109",
+      "text": ":4+:}ly/"
+    },
+    {
+      "offset": "0x083112",
+      "text": "44Wz"
+    },
+    {
+      "offset": "0x083117",
+      "text": "z!+2An"
+    },
+    {
+      "offset": "0x083120",
+      "text": ".5Qy"
+    },
+    {
+      "offset": "0x083140",
+      "text": "*-<u"
+    },
+    {
+      "offset": "0x083218",
+      "text": "$3br"
+    },
+    {
+      "offset": "0x083224",
+      "text": "%&'()*456789:CDEFGHIJSTUVWXYZcdefghijstuvwxyz"
+    },
+    {
+      "offset": "0x0832D9",
+      "text": "&'()*56789:CDEFGHIJSTUVWXYZcdefghijstuvwxyz"
+    },
+    {
+      "offset": "0x08370B",
+      "text": "@8Px`"
+    },
+    {
+      "offset": "0x08390F",
+      "text": "@>P~`"
+    },
+    {
+      "offset": "0x08392B",
+      "text": "@>P~`"
+    },
+    {
+      "offset": "0x083959",
+      "text": "*<5?4;5:9BJ^PBPYH:;SpTZbejkjAPt{ui{ckuo"
+    },
+    {
+      "offset": "0x083989",
+      "text": "/cB8Bcoccccccoscccccosxccccosyzcccosx{{ccosy{||cosxz{|}"
+    },
+    {
+      "offset": "0x083B90",
+      "text": "BACK_JPCON1=%X"
+    },
+    {
+      "offset": "0x083BA0",
+      "text": "BACK_JPCON2=%X"
+    },
+    {
+      "offset": "0x083BB0",
+      "text": "BACK_JPCON3=%X"
+    },
+    {
+      "offset": "0x083BC0",
+      "text": "BACK_JPSIZE0=%X"
+    },
+    {
+      "offset": "0x083BD1",
+      "text": "BACK_JPOBAS=%X"
+    },
+    {
+      "offset": "0x083BE1",
+      "text": "BACK_JPOYADR=%X"
+    },
+    {
+      "offset": "0x083BF2",
+      "text": "BACK_JPOEND=%X"
+    },
+    {
+      "offset": "0x083C02",
+      "text": "BACK_JPOUVADR=%X"
+    },
+    {
+      "offset": "0x083C14",
+      "text": "BACK_JPOPTR=%X"
+    },
+    {
+      "offset": "0x083C24",
+      "text": "BACK_JPOLTA=%X"
+    },
+    {
+      "offset": "0x083C34",
+      "text": "BACK_JPIBAS=%X"
+    },
+    {
+      "offset": "0x083C44",
+      "text": "BACK_JPIYADR=%X"
+    },
+    {
+      "offset": "0x083C55",
+      "text": "BACK_JPIEND=%X"
+    },
+    {
+      "offset": "0x083C65",
+      "text": "BACK_JPIUVADR=%X"
+    },
+    {
+      "offset": "0x083C77",
+      "text": "BACK_JPIPTR=%X"
+    },
+    {
+      "offset": "0x083C87",
+      "text": "BACK_JPUBIT=%X"
+    },
+    {
+      "offset": "0x083C97",
+      "text": "BACK_JPHCNT=%X"
+    },
+    {
+      "offset": "0x083CA7",
+      "text": "BACK_JPDRI=%X"
+    },
+    {
+      "offset": "0x083CB6",
+      "text": "BACK_JPBSHADDR=%X"
+    },
+    {
+      "offset": "0x083CC9",
+      "text": "BACK_JPINTCON=%X"
+    },
+    {
+      "offset": "0x083CDB",
+      "text": "BACK_JPFLG=%X"
+    },
+    {
+      "offset": "0x083CEA",
+      "text": "BACK_JPLS=%X"
+    },
+    {
+      "offset": "0x083CF8",
+      "text": "BACK_JPES=%X"
+    },
+    {
+      "offset": "0x083D06",
+      "text": "BACK_JPCOM=%X"
+    },
+    {
+      "offset": "0x083D15",
+      "text": "BACK_JPTINF=%X"
+    },
+    {
+      "offset": "0x083D25",
+      "text": "BACK_JPT0SIZE=%X"
+    },
+    {
+      "offset": "0x083D37",
+      "text": "BACK_JPT1SIZE=%X"
+    },
+    {
+      "offset": "0x083D49",
+      "text": "BACK_JPT2SIZE=%X"
+    },
+    {
+      "offset": "0x083D5B",
+      "text": "BACK_JPT0POS=%X"
+    },
+    {
+      "offset": "0x083D6C",
+      "text": "BACK_JPT1POS=%X"
+    },
+    {
+      "offset": "0x083D7D",
+      "text": "BACK_JPT2POS=%X"
+    },
+    {
+      "offset": "0x083D8E",
+      "text": "BACK_JPT0BASE=%X"
+    },
+    {
+      "offset": "0x083DA0",
+      "text": "BACK_JPT1BASE=%X"
+    },
+    {
+      "offset": "0x083DB2",
+      "text": "BACK_JPT2BASE=%X"
+    },
+    {
+      "offset": "0x083DC4",
+      "text": "BACK_JPSIZE1=%X"
+    },
+    {
+      "offset": "0x083DD5",
+      "text": "BACK_JPXSCALE=%X"
+    },
+    {
+      "offset": "0x083DE7",
+      "text": "BACK_JPYSCALE=%X"
+    },
+    {
+      "offset": "0x083DF9",
+      "text": "BACK_JPDCXCROP=%X"
+    },
+    {
+      "offset": "0x083E0C",
+      "text": "BACK_JPDCYCROP=%X"
+    },
+    {
+      "offset": "0x083E1F",
+      "text": "BACK_JPFLG_CLR=%X"
+    },
+    {
+      "offset": "0x083E32",
+      "text": "BACK_JPPAUSECNT=%X"
+    },
+    {
+      "offset": "0x083E46",
+      "text": "BACK_JPDCYBASE=%X"
+    },
+    {
+      "offset": "0x083E59",
+      "text": "BACK_JPDCUVBASE=%X"
+    },
+    {
+      "offset": "0x083E6D",
+      "text": "BACK_JPDMAOUTX32=%X"
+    },
+    {
+      "offset": "0x083E82",
+      "text": "BACK_JPELINECNT=%X"
+    },
+    {
+      "offset": "0x083E96",
+      "text": "BACK_DCTIMER=%X"
+    },
+    {
+      "offset": "0x083EA7",
+      "text": "BACK_DEBLOCK=%X"
+    },
+    {
+      "offset": "0x083EB8",
+      "text": "PRE_JPCON1=%X"
+    },
+    {
+      "offset": "0x083EC7",
+      "text": "PRE_JPCON2=%X"
+    },
+    {
+      "offset": "0x083ED6",
+      "text": "PRE_JPCON3=%X"
+    },
+    {
+      "offset": "0x083EE5",
+      "text": "PRE_JPSIZE0=%X"
+    },
+    {
+      "offset": "0x083EF5",
+      "text": "PRE_JPOBAS=%X"
+    },
+    {
+      "offset": "0x083F04",
+      "text": "PRE_JPOYADR=%X"
+    },
+    {
+      "offset": "0x083F14",
+      "text": "PRE_JPOEND=%X"
+    },
+    {
+      "offset": "0x083F23",
+      "text": "PRE_JPOUVADR=%X"
+    },
+    {
+      "offset": "0x083F34",
+      "text": "PRE_JPOPTR=%X"
+    },
+    {
+      "offset": "0x083F43",
+      "text": "PRE_JPOLTA=%X"
+    },
+    {
+      "offset": "0x083F52",
+      "text": "PRE_JPIBAS=%X"
+    },
+    {
+      "offset": "0x083F61",
+      "text": "PRE_JPIYADR=%X"
+    },
+    {
+      "offset": "0x083F71",
+      "text": "PRE_JPIEND=%X"
+    },
+    {
+      "offset": "0x083F80",
+      "text": "PRE_JPIUVADR=%X"
+    },
+    {
+      "offset": "0x083F91",
+      "text": "PRE_JPIPTR=%X"
+    },
+    {
+      "offset": "0x083FA0",
+      "text": "PRE_JPUBIT=%X"
+    },
+    {
+      "offset": "0x083FAF",
+      "text": "PRE_JPHCNT=%X"
+    },
+    {
+      "offset": "0x083FBE",
+      "text": "PRE_JPDRI=%X"
+    },
+    {
+      "offset": "0x083FCC",
+      "text": "PRE_JPBSHADDR=%X"
+    },
+    {
+      "offset": "0x083FDE",
+      "text": "PRE_JPINTCON=%X"
+    },
+    {
+      "offset": "0x083FEF",
+      "text": "PRE_JPFLG=%X"
+    },
+    {
+      "offset": "0x083FFD",
+      "text": "PRE_JPLS=%X"
+    },
+    {
+      "offset": "0x08400A",
+      "text": "PRE_JPES=%X"
+    },
+    {
+      "offset": "0x084017",
+      "text": "PRE_JPCOM=%X"
+    },
+    {
+      "offset": "0x084025",
+      "text": "PRE_JPTINF=%X"
+    },
+    {
+      "offset": "0x084034",
+      "text": "PRE_JPT0SIZE=%X"
+    },
+    {
+      "offset": "0x084045",
+      "text": "PRE_JPT1SIZE=%X"
+    },
+    {
+      "offset": "0x084056",
+      "text": "PRE_JPT2SIZE=%X"
+    },
+    {
+      "offset": "0x084067",
+      "text": "PRE_JPT0POS=%X"
+    },
+    {
+      "offset": "0x084077",
+      "text": "PRE_JPT1POS=%X"
+    },
+    {
+      "offset": "0x084087",
+      "text": "PRE_JPT2POS=%X"
+    },
+    {
+      "offset": "0x084097",
+      "text": "PRE_JPT0BASE=%X"
+    },
+    {
+      "offset": "0x0840A8",
+      "text": "PRE_JPT1BASE=%X"
+    },
+    {
+      "offset": "0x0840B9",
+      "text": "PRE_JPT2BASE=%X"
+    },
+    {
+      "offset": "0x0840CA",
+      "text": "PRE_JPSIZE1=%X"
+    },
+    {
+      "offset": "0x0840DA",
+      "text": "PRE_JPXSCALE=%X"
+    },
+    {
+      "offset": "0x0840EB",
+      "text": "PRE_JPYSCALE=%X"
+    },
+    {
+      "offset": "0x0840FC",
+      "text": "PRE_JPDCXCROP=%X"
+    },
+    {
+      "offset": "0x08410E",
+      "text": "PRE_JPDCYCROP=%X"
+    },
+    {
+      "offset": "0x084120",
+      "text": "PRE_JPFLG_CLR=%X"
+    },
+    {
+      "offset": "0x084132",
+      "text": "PRE_JPPAUSECNT=%X"
+    },
+    {
+      "offset": "0x084145",
+      "text": "PRE_JPDCYBASE=%X"
+    },
+    {
+      "offset": "0x084157",
+      "text": "PRE_JPDCUVBASE=%X"
+    },
+    {
+      "offset": "0x08416A",
+      "text": "PRE_JPDMAOUTX32=%X"
+    },
+    {
+      "offset": "0x08417E",
+      "text": "PRE_JPELINECNT=%X"
+    },
+    {
+      "offset": "0x084191",
+      "text": "PRE_DCTIMER=%X"
+    },
+    {
+      "offset": "0x084384",
+      "text": "buf full"
+    },
+    {
+      "offset": "0x08488D",
+      "text": "'])0+"
+    },
+    {
+      "offset": "0x084895",
+      "text": "/)1T3"
+    },
+    {
+      "offset": "0x084FEC",
+      "text": "BuildwinMedia-Player    1.00"
+    },
+    {
+      "offset": "0x0860CC",
+      "text": "/PHO"
+    },
+    {
+      "offset": "0x086124",
+      "text": "RIFF"
+    },
+    {
+      "offset": "0x08612C",
+      "text": "WAVEfmt "
+    },
+    {
+      "offset": "0x08614A",
+      "text": "fact"
+    },
+    {
+      "offset": "0x086156",
+      "text": "data"
+    },
+    {
+      "offset": "0x086160",
+      "text": "RIFF"
+    },
+    {
+      "offset": "0x086168",
+      "text": "WAVEfmt "
+    },
+    {
+      "offset": "0x086188",
+      "text": "fact"
+    },
+    {
+      "offset": "0x086194",
+      "text": "data"
+    },
+    {
+      "offset": "0x08619C",
+      "text": "RIFF"
+    },
+    {
+      "offset": "0x0861A4",
+      "text": "WAVEfmt 2"
+    },
+    {
+      "offset": "0x0861E2",
+      "text": "fact"
+    },
+    {
+      "offset": "0x0861EE",
+      "text": "data"
+    },
+    {
+      "offset": "0x0861F8",
+      "text": "RIFF"
+    },
+    {
+      "offset": "0x086200",
+      "text": "WAVEfmt "
+    },
+    {
+      "offset": "0x08621C",
+      "text": "data"
+    },
+    {
+      "offset": "0x086224",
+      "text": "NULL"
+    },
+    {
+      "offset": "0x086238",
+      "text": "-iic -w:"
+    },
+    {
+      "offset": "0x086241",
+      "text": "-iic -r:"
+    },
+    {
+      "offset": "0x0863BC",
+      "text": "UUUUUUUUUUUU"
+    },
+    {
+      "offset": "0x08881A",
+      "text": "Y&ubF,r"
+    },
+    {
+      "offset": "0x088853",
+      "text": "=acV>.:"
+    },
+    {
+      "offset": "0x088877",
+      "text": "EQdPE"
+    },
+    {
+      "offset": "0x0888A6",
+      "text": "\"LubFL"
+    },
+    {
+      "offset": "0x088919",
+      "text": "5VT>"
+    },
+    {
+      "offset": "0x08896D",
+      "text": "s5VCNMV-@eV"
+    },
+    {
+      "offset": "0x088979",
+      "text": "H}VSg"
+    },
+    {
+      "offset": "0x08899D",
+      "text": "nYWdOrW"
+    },
+    {
+      "offset": "0x0889D2",
+      "text": "Q\\&z^\\"
+    },
+    {
+      "offset": "0x088A65",
+      "text": ",H^acV^"
+    },
+    {
+      "offset": "0x088AA2",
+      "text": " _\"L/_>"
+    },
+    {
+      "offset": "0x088AB1",
+      "text": "{[_LEj_ "
+    },
+    {
+      "offset": "0x088AFE",
+      "text": "<dZJDd]"
+    },
+    {
+      "offset": "0x088B7A",
+      "text": "0eN'8e"
+    },
+    {
+      "offset": "0x088B85",
+      "text": "LHeQdPe"
+    },
+    {
+      "offset": "0x088B8D",
+      "text": "~Xen"
+    },
+    {
+      "offset": "0x088B9E",
+      "text": "yeb1"
+    },
+    {
+      "offset": "0x088BF2",
+      "text": "&foN/f"
+    },
+    {
+      "offset": "0x088BFA",
+      "text": "7ff&@f"
+    },
+    {
+      "offset": "0x088C11",
+      "text": "sjfR"
+    },
+    {
+      "offset": "0x088C16",
+      "text": "rf|s{fq"
+    },
+    {
+      "offset": "0x088C6E",
+      "text": "0gxC9g%"
+    },
+    {
+      "offset": "0x088C81",
+      "text": "Q\\g,"
+    },
+    {
+      "offset": "0x088CFE",
+      "text": "8l5F=l"
+    },
+    {
+      "offset": "0x088D06",
+      "text": "AlubFli"
+    },
+    {
+      "offset": "0x088D1A",
+      "text": "XlS>]lQ"
+    },
+    {
+      "offset": "0x088D2E",
+      "text": "olG8tl@"
+    },
+    {
+      "offset": "0x088D36",
+      "text": "xljq}l"
+    },
+    {
+      "offset": "0x088DCA",
+      "text": "&mWW+m"
+    },
+    {
+      "offset": "0x088DF5",
+      "text": "_[m!3`m"
+    },
+    {
+      "offset": "0x088E0A",
+      "text": "smxexm"
+    },
+    {
+      "offset": "0x088EDE",
+      "text": "znb*"
+    },
+    {
+      "offset": "0x088F62",
+      "text": "#o4N(o"
+    },
+    {
+      "offset": "0x088F76",
+      "text": "=oFIBoK~Go>"
+    },
+    {
+      "offset": "0x088F8D",
+      "text": "[\\oW"
+    },
+    {
+      "offset": "0x088F9D",
+      "text": "Gqo>"
+    },
+    {
+      "offset": "0x0890E6",
+      "text": " (08@LZ"
+    },
+    {
+      "offset": "0x089133",
+      "text": "   ***"
+    },
+    {
+      "offset": "0x089157",
+      "text": "   ,,,"
+    },
+    {
+      "offset": "0x0891A6",
+      "text": "   ***"
+    },
+    {
+      "offset": "0x0891CE",
+      "text": "   ,,,"
+    },
+    {
+      "offset": "0x0891E6",
+      "text": " &.4<D:6"
+    },
+    {
+      "offset": "0x0891FE",
+      "text": " &.6>FL$"
+    },
+    {
+      "offset": "0x089225",
+      "text": "\"\"\"***"
+    },
+    {
+      "offset": "0x08929E",
+      "text": "\"\"\"***"
+    },
+    {
+      "offset": "0x089307",
+      "text": "&.8DTf"
+    },
+    {
+      "offset": "0x089320",
+      "text": "\"*26L"
+    },
+    {
+      "offset": "0x089338",
+      "text": "\"(.66"
+    },
+    {
+      "offset": "0x08B3DE",
+      "text": "x<8888<x"
+    },
+    {
+      "offset": "0x08B436",
+      "text": "<x88"
+    },
+    {
+      "offset": "0x08B4AA",
+      "text": "x<8888<x"
+    },
+    {
+      "offset": "0x08B4EE",
+      "text": "8<8<8<8<8<8<8<8<8<8|<"
+    },
+    {
+      "offset": "0x08B585",
+      "text": "x8888>x"
+    },
+    {
+      "offset": "0x08B602",
+      "text": "<xx8x8x8x8x8x88x>"
+    },
+    {
+      "offset": "0x08B646",
+      "text": "|xx8x<x<x<x<x<|x~"
+    },
+    {
+      "offset": "0x08B68A",
+      "text": "<xx<x"
+    },
+    {
+      "offset": "0x08B696",
+      "text": "x<<8"
+    },
+    {
+      "offset": "0x08B6CC",
+      "text": "?x<<<<8<8<8<8<8<8<8<8<"
+    },
+    {
+      "offset": "0x08B7A8",
+      "text": "8p888<"
+    },
+    {
+      "offset": "0x08B864",
+      "text": "?x<<<<8<8<8<8<8<8<8<8<"
+    },
+    {
+      "offset": "0x08B8AA",
+      "text": "<p8p8p<p"
+    },
+    {
+      "offset": "0x08B932",
+      "text": "<88<"
+    },
+    {
+      "offset": "0x08B93E",
+      "text": "x<<<"
+    },
+    {
+      "offset": "0x08B976",
+      "text": "<xx8x8x8x8x8x88x>"
+    },
+    {
+      "offset": "0x08B9BA",
+      "text": "<8x<x"
+    },
+    {
+      "offset": "0x08B9C4",
+      "text": "x<x<<<>"
+    },
+    {
+      "offset": "0x08B9FE",
+      "text": "|xx8x<x<x<x<x<|x~"
+    },
+    {
+      "offset": "0x08BA4C",
+      "text": "88x8xx}"
+    },
+    {
+      "offset": "0x08BC52",
+      "text": "x<88<x"
+    },
+    {
+      "offset": "0x08BC94",
+      "text": "x<88<x"
+    },
+    {
+      "offset": "0x08BCB3",
+      "text": "x<xx<x<"
+    },
+    {
+      "offset": "0x08BCF6",
+      "text": "<x<x<x<x"
+    },
+    {
+      "offset": "0x08BD20",
+      "text": "x<x<8<88<x<x"
+    },
+    {
+      "offset": "0x08BD60",
+      "text": "x<x<x<x<x<x<x<x<x<x<x<x<x<x<x<x<<<?"
+    },
+    {
+      "offset": "0x08BDEC",
+      "text": "<x888<x"
+    },
+    {
+      "offset": "0x08BE01",
+      "text": "<x<x"
+    },
+    {
+      "offset": "0x08BE06",
+      "text": "x<<<?"
+    },
+    {
+      "offset": "0x08BE32",
+      "text": "x<x<x<x<x<xx"
+    },
+    {
+      "offset": "0x08BE4A",
+      "text": "xxxxx<x<"
+    },
+    {
+      "offset": "0x08BE74",
+      "text": ">x<8x<x<x"
+    },
+    {
+      "offset": "0x08BEB8",
+      "text": "xxx<x"
+    },
+    {
+      "offset": "0x08BEFC",
+      "text": ">x<8x<x<x"
+    },
+    {
+      "offset": "0x08BF12",
+      "text": "x<x<8<<x"
+    },
+    {
+      "offset": "0x08BF3C",
+      "text": "x<|<|<|<~<~<"
+    },
+    {
+      "offset": "0x08BF5C",
+      "text": "x|x|x<"
+    },
+    {
+      "offset": "0x08BF80",
+      "text": "|<||||||||~|~"
+    },
+    {
+      "offset": "0x08C008",
+      "text": "x<xxx"
+    },
+    {
+      "offset": "0x08C026",
+      "text": "xxxxx<x<"
+    },
+    {
+      "offset": "0x08C063",
+      "text": "<x<x<8<88<x"
+    },
+    {
+      "offset": "0x08C0D4",
+      "text": "x<x<x<x<x<x<x<x<"
+    },
+    {
+      "offset": "0x08C0E8",
+      "text": "x<x<x<x<x<x<x<x<x<"
+    },
+    {
+      "offset": "0x08C11D",
+      "text": "x<88<x<x<x"
+    },
+    {
+      "offset": "0x08C136",
+      "text": "<<<<"
+    },
+    {
+      "offset": "0x08C1EA",
+      "text": "xxx<x<x<x<x<x"
+    },
+    {
+      "offset": "0x08C1FA",
+      "text": "x<x<x<x<xxx"
+    },
+    {
+      "offset": "0x08C22D",
+      "text": "x<<8"
+    },
+    {
+      "offset": "0x08C246",
+      "text": "<<<<"
+    },
+    {
+      "offset": "0x08C270",
+      "text": "xxx<x<x<x<xx"
+    },
+    {
+      "offset": "0x08C28A",
+      "text": "x<x<"
+    },
+    {
+      "offset": "0x08C2CA",
+      "text": "<88<x<x<x"
+    },
+    {
+      "offset": "0x08C2FE",
+      "text": "g|fnnnl"
+    },
+    {
+      "offset": "0x08C33C",
+      "text": "<x<x8888"
+    },
+    {
+      "offset": "0x08C4D4",
+      "text": "<xx<p<p<p<p<xxxx?"
+    },
+    {
+      "offset": "0x08C518",
+      "text": "<x88x8x888<x"
+    },
+    {
+      "offset": "0x08C532",
+      "text": "p<x<?"
+    },
+    {
+      "offset": "0x08C5BC",
+      "text": "<<?x"
+    },
+    {
+      "offset": "0x08C5FB",
+      "text": "<p<p8xx?"
+    },
+    {
+      "offset": "0x08C637",
+      "text": "p<pxppp"
+    },
+    {
+      "offset": "0x08C66C",
+      "text": "<x88x<"
+    },
+    {
+      "offset": "0x08C683",
+      "text": "<p<x<<x?"
+    },
+    {
+      "offset": "0x08C6B0",
+      "text": "<xx8p<"
+    },
+    {
+      "offset": "0x08C739",
+      "text": "x<888x<x"
+    },
+    {
+      "offset": "0x08C74E",
+      "text": "x<8<88<x"
+    },
+    {
+      "offset": "0x08CA22",
+      "text": "~0~0~`v`v"
+    },
+    {
+      "offset": "0x095CCB",
+      "text": "?~?~"
+    },
+    {
+      "offset": "0x095CD0",
+      "text": "?~?~"
+    },
+    {
+      "offset": "0x095CD5",
+      "text": "?>?~"
+    },
+    {
+      "offset": "0x095CDA",
+      "text": "?>>~"
+    },
+    {
+      "offset": "0x095CDF",
+      "text": "?>>~"
+    },
+    {
+      "offset": "0x095CE4",
+      "text": "??~~"
+    },
+    {
+      "offset": "0x095CE9",
+      "text": "??~~"
+    },
+    {
+      "offset": "0x095CEE",
+      "text": "??~~"
+    },
+    {
+      "offset": "0x099518",
+      "text": "HAL : [ODML]<INFO>  addr = 0x%x,size = 0x%x"
+    },
+    {
+      "offset": "0x099545",
+      "text": "avi : odml malloc fial.need size = %x"
+    },
+    {
+      "offset": "0x09956C",
+      "text": "avi : odml write hander fail"
+    },
+    {
+      "offset": "0x09958A",
+      "text": "avi : get header sector fail"
+    },
+    {
+      "offset": "0x0995A8",
+      "text": "headersector:%d"
+    },
+    {
+      "offset": "0x0995B9",
+      "text": "fs : fat16,fat ss = %d"
+    },
+    {
+      "offset": "0x0995D1",
+      "text": "fs : fat12,fat ss = %d"
+    },
+    {
+      "offset": "0x0995E9",
+      "text": "fs : fat32,fat ss = %d"
+    },
+    {
+      "offset": "0x099601",
+      "text": "fs : unknow"
+    },
+    {
+      "offset": "0x09960E",
+      "text": ">>>>WARNING : fs error .%d,%d"
+    },
+    {
+      "offset": "0x099630",
+      "text": "EXFAT   "
+    },
+    {
+      "offset": "0x099639",
+      "text": "*:<>|\"?"
+    },
+    {
+      "offset": "0x099642",
+      "text": "+,;=[]"
+    },
+    {
+      "offset": "0x09964C",
+      "text": "MSDOS5.0"
+    },
+    {
+      "offset": "0x099655",
+      "text": "NO NAME    FAT32   "
+    },
+    {
+      "offset": "0x099669",
+      "text": "NO NAME    FAT     "
+    },
+    {
+      "offset": "0x099776",
+      "text": "2!p!"
+    },
+    {
+      "offset": "0x0C42A0",
+      "text": "thumbOffset=0x%x"
+    },
+    {
+      "offset": "0x0C42B2",
+      "text": "HAL_CFG_MJPEG_WIDTH :%d  HAL_CFG_MJPEG_HEIGHT:%d win_w:%d win_h:%d"
+    },
+    {
+      "offset": "0x0C42F7",
+      "text": "------------mjbuffer:0x%x----Ybuffer:0x%x-----"
+    },
+    {
+      "offset": "0x0C4328",
+      "text": "write yuv file start"
+    },
+    {
+      "offset": "0x0C433E",
+      "text": "write yuv file ok"
+    },
+    {
+      "offset": "0x0C4351",
+      "text": "StartQuarter the curBuff == %x,the curlen == %x......"
+    },
+    {
+      "offset": "0x0C4388",
+      "text": "zuoshang--------------------"
+    },
+    {
+      "offset": "0x0C43A7",
+      "text": "5s timeout : error"
+    },
+    {
+      "offset": "0x0C43BB",
+      "text": "image encode : error"
+    },
+    {
+      "offset": "0x0C43D1",
+      "text": "image ok "
+    },
+    {
+      "offset": "0x0C43DC",
+      "text": "the mem == 0x%x,the len == %d"
+    },
+    {
+      "offset": "0x0C43FB",
+      "text": "write y0 error"
+    },
+    {
+      "offset": "0x0C440B",
+      "text": "write y1 error"
+    },
+    {
+      "offset": "0x0C441B",
+      "text": "write y3 error"
+    },
+    {
+      "offset": "0x0C442B",
+      "text": "write y4 error"
+    },
+    {
+      "offset": "0x0C443B",
+      "text": "write uv0 error"
+    },
+    {
+      "offset": "0x0C444C",
+      "text": "write uv1 error"
+    },
+    {
+      "offset": "0x0C445D",
+      "text": "write uv2 error"
+    },
+    {
+      "offset": "0x0C446E",
+      "text": "write uv3 error"
+    },
+    {
+      "offset": "0x0C447F",
+      "text": "read yuvfile Ybuf failed"
+    },
+    {
+      "offset": "0x0C4499",
+      "text": "read yuvfile uvbuf failed"
+    },
+    {
+      "offset": "0x0C44B4",
+      "text": "StitchUpper:SOS %d"
+    },
+    {
+      "offset": "0x0C44C8",
+      "text": "image encode: malloc fail"
+    },
+    {
+      "offset": "0x0C44E3",
+      "text": "image encode: open thumbfile file fail"
+    },
+    {
+      "offset": "0x0C450B",
+      "text": "SysCtrl.crop_level:%d mjpegEncCtrl.frame_enable:%d"
+    },
+    {
+      "offset": "0x0C4540",
+      "text": "--------wt------UPRIGHT_4---------"
+    },
+    {
+      "offset": "0x0C4564",
+      "text": "---thum error---"
+    },
+    {
+      "offset": "0x0C4577",
+      "text": "---image OK!---"
+    },
+    {
+      "offset": "0x0C4589",
+      "text": "thumber image encode: timeout"
+    },
+    {
+      "offset": "0x0C45A8",
+      "text": "jpg decode fail"
+    },
+    {
+      "offset": "0x0C45B9",
+      "text": "--------YUV:%d-------------"
+    },
+    {
+      "offset": "0x0C45D7",
+      "text": "width1:%d  height1:%d"
+    },
+    {
+      "offset": "0x0C45EF",
+      "text": "----------....%d....----------"
+    },
+    {
+      "offset": "0x0C4610",
+      "text": "image encode: open upper file fail"
+    },
+    {
+      "offset": "0x0C4634",
+      "text": "mallloc w sd memory error"
+    },
+    {
+      "offset": "0x0C4670",
+      "text": "in lib!!"
+    },
+    {
+      "offset": "0x0C467A",
+      "text": "wm-bmp2yuv-init w:%d h:%d num:%d"
+    },
+    {
+      "offset": "0x0C469C",
+      "text": "mem err!"
+    },
+    {
+      "offset": "0x0C46A6",
+      "text": "id=%d,first pixel:y=0x%x,u=0x%x,y=0x%x,v=0x%x"
+    },
+    {
+      "offset": "0x0C46D5",
+      "text": "free rgb24_buf_ts"
+    },
+    {
+      "offset": "0x0C46E8",
+      "text": "pos_x:%d pos_y:%d"
+    },
+    {
+      "offset": "0x0C46FB",
+      "text": "in wm_dram:"
+    },
+    {
+      "offset": "0x0C470D",
+      "text": "         (((((                  "
+    },
+    {
+      "offset": "0x0C474E",
+      "text": "AAAAAA"
+    },
+    {
+      "offset": "0x0C476E",
+      "text": "BBBBBB"
+    },
+    {
+      "offset": "0x0C4890",
+      "text": "         (((((                  "
+    },
+    {
+      "offset": "0x0C48D1",
+      "text": "AAAAAA"
+    },
+    {
+      "offset": "0x0C48F1",
+      "text": "BBBBBB"
+    },
+    {
+      "offset": "0x0C4BB4",
+      "text": "battery"
+    },
+    {
+      "offset": "0x0C4BCC",
+      "text": "usensor"
+    },
+    {
+      "offset": "0x0C4BE4",
+      "text": "sd-card"
+    },
+    {
+      "offset": "0x0C4C2C",
+      "text": "cmos-sensor"
+    },
+    {
+      "offset": "0x0C4C44",
+      "text": "ad-key"
+    },
+    {
+      "offset": "0x0C59C8",
+      "text": "00:00"
+    },
+    {
+      "offset": "0x0C59D0",
+      "text": "00:00:00"
+    },
+    {
+      "offset": "0x0C59DC",
+      "text": "00:00"
+    },
+    {
+      "offset": "0x0C6C74",
+      "text": "00-00"
+    },
+    {
+      "offset": "0x0C6C7C",
+      "text": "keyADC value:"
+    },
+    {
+      "offset": "0x0C79F4",
+      "text": "00:00/00:00"
+    },
+    {
+      "offset": "0x0C7A00",
+      "text": "000/000"
+    },
+    {
+      "offset": "0x0C8DDD",
+      "text": "$.:HXj~"
+    },
+    {
+      "offset": "0x0C8DF0",
+      "text": " 0@P`p"
+    },
+    {
+      "offset": "0x0CA34E",
+      "text": " 0@P`p"
+    },
+    {
+      "offset": "0x0CAE38",
+      "text": "st3030b"
+    },
+    {
+      "offset": "0x0CCCC4",
+      "text": "!\"$%'(*+-.01245789;<>?@ACDEGHIJKMNOPQRSUVWXYZ[\\]^_`aabcdefgghijjkllmnnoppqrrssttuuvvwwxxyyyzz{{{|||}}~~~"
+    },
+    {
+      "offset": "0x0CCDC5",
+      "text": " !\"$%'()+,-/01345789:;=>?@ACDEFGHIJKMNOPQRSTUVWXXYZ[\\]^__`abcddefgghijjkllmnnoppqrrsstuuvvwwxyyzz{{||}}~~"
+    },
+    {
+      "offset": "0x0CCEC8",
+      "text": "!\"#%&'(*+,-.012345789:;<=>?@BCDEFGHIJKLMNOPQQRSTUVWXYZ[[\\]^_``abcddefghhijkklmnnopqqrsstuvvwxxyzz{|}}~"
+    },
+    {
+      "offset": "0x0CCFCA",
+      "text": " !\"#$&'()*+,-/0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTTUVWXYZ[\\]^^_`abcddefghijjklmnoppqrsttuvwxyyz{|}~~"
+    },
+    {
+      "offset": "0x0CD0CD",
+      "text": " !\"#$%&')*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPPQRSTUVWXYZ[\\]^_`abbcdefghijklmnoopqrstuvwxyzz{|}~"
+    },
+    {
+      "offset": "0x0CD1CF",
+      "text": " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefgghijklmnopqrstuvwxyz{|}~"
+    },
+    {
+      "offset": "0x0CD2D0",
+      "text": " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+    },
+    {
+      "offset": "0x0CD3D1",
+      "text": " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdeghijklmnopqrstuvwxyz{|}~"
+    },
+    {
+      "offset": "0x0CD4D3",
+      "text": " !!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHJKLMNOPQRSTUVWXYZ[\\^_`abcdefghijkmnopqrstuvwxz{|}~"
+    },
+    {
+      "offset": "0x0CD5D8",
+      "text": " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDFGHIJKLMNOPRSTUVWXZ[\\]^_`bcdefghjklmnpqrstuwxyz{|~"
+    },
+    {
+      "offset": "0x0CD6DD",
+      "text": " !\"#$%&&'()*+,-./012345789:;<=>?@ACDEFGHJKLMNPQRSTVWXY[\\]^`abcefgijklnoprstvwxy{|}"
+    },
+    {
+      "offset": "0x0CD7E3",
+      "text": " !\"#$%%&'()*+,-./023456789;<=>?@BCDEGHIJLMNPQRTUVXYZ\\]_`acdfgijkmnpqstvwyz|}"
+    },
+    {
+      "offset": "0x0CD8E9",
+      "text": " !!\"#$%&'()*+,-/012345789:<=>@ABDEFHIJLMOPRSUVXY[\\^_acdfgiklnpqstvxy{}~"
+    },
+    {
+      "offset": "0x0CDA24",
+      "text": "H63P"
+    },
+    {
+      "offset": "0x0CDA60",
+      "text": " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+    },
+    {
+      "offset": "0x0CDB5F",
+      "text": " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefgghijklmnopqrstuvwxyz{|}~"
+    },
+    {
+      "offset": "0x0CDC5D",
+      "text": " !\"#$%&')*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPPQRSTUVWXYZ[\\]^_`abbcdefghijklmnoopqrstuvwxyzz{|}~"
+    },
+    {
+      "offset": "0x0CDD5A",
+      "text": " !\"#$&'()*+,-/0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTTUVWXYZ[\\]^^_`abcddefghijjklmnoppqrsttuvwxyyz{|}~~"
+    },
+    {
+      "offset": "0x0CDE58",
+      "text": "!\"#%&'(*+,-.012345789:;<=>?@BCDEFGHIJKLMNOPQQRSTUVWXYZ[[\\]^_``abcddefghhijkklmnnopqqrsstuvvwxxyzz{|}}~"
+    },
+    {
+      "offset": "0x0CDF55",
+      "text": " !\"$%'()+,-/01345789:;=>?@ACDEFGHIJKMNOPQRSTUVWXXYZ[\\]^__`abcddefgghijjkllmnnoppqrrsstuuvvwwxyyzz{{||}}~~"
+    },
+    {
+      "offset": "0x0CE054",
+      "text": "!\"$%'(*+-.01245789;<>?@ACDEGHIJKMNOPQRSUVWXYZ[\\]^_`aabcdefgghijjkllmnnoppqrrssttuuvvwwxxyyyzz{{{|||}}~~~"
+    },
+    {
+      "offset": "0x0CE170",
+      "text": " !\"\"#$%&''()*+,,-./01123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrsuvwxyz{|}~"
+    },
+    {
+      "offset": "0x0CE26B",
+      "text": " !!\"#$%&'()*+,,-./0123456789:;<=>?@ABCCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdeghijklmnopqrstuvwxyz{|}~"
+    },
+    {
+      "offset": "0x0CE365",
+      "text": " !\"#$%&''()*+,-./0123456789:;<=>>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklnopqrstuvwxyz{|}~"
+    },
+    {
+      "offset": "0x0CE45F",
+      "text": " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+    },
+    {
+      "offset": "0x0CE54C",
+      "text": " \"$')+.0257:<>@BEGIKNPRTVX[]_acehjlnpruwy{}"
+    },
+    {
+      "offset": "0x0CE64B",
+      "text": "!#&(+-/1468:=?ACEHJLNQSUWY[]_acegjlnprtvxz|~"
+    },
+    {
+      "offset": "0x0CE74A",
+      "text": "!$&)+.02479;=@BDFHKMOQTUWY[]_acegiklnprtvxz|~"
+    },
+    {
+      "offset": "0x0CE848",
+      "text": " #%(*-/2468;=?ADFHJLNPRTVWY[]_acegikmnprtuwy{|~"
+    },
+    {
+      "offset": "0x0CE947",
+      "text": " #&(+.0368:<?ACEHIKMOQSUWYZ\\^`bdegikmoprtuwyz|~"
+    },
+    {
+      "offset": "0x0CEA46",
+      "text": "!$'*,/247:<>@BDFHKLNPRTVXZ\\]_acdfhjkmoqrtuwxz|}"
+    },
+    {
+      "offset": "0x0CEB45",
+      "text": "!$'*.0358:=?ACEGIKNOQSUWY[]_`bdegijlnoqstvwyz|}"
+    },
+    {
+      "offset": "0x0CEC44",
+      "text": "!%(+.1369;>ACEGIKMOQRTVXZ\\^`bcefhikmnpqsuvwyz{}~"
+    },
+    {
+      "offset": "0x0CED43",
+      "text": " $(+.157:<?ADFHJLNPRUVXZ[]_`bdeghjkmnpqstvwxz{|~"
+    },
+    {
+      "offset": "0x0CEE43",
+      "text": "#',/259;>@CEHJLNPRTVXY[]^`bceghiklnoprsuvxyz|}~"
+    },
+    {
+      "offset": "0x0CEF42",
+      "text": "#'+0369<>ACFHKMOQSUWY[\\^`acefhjklnoprstvwxz{|}"
+    },
+    {
+      "offset": "0x0CF042",
+      "text": "&*.369<@BEGJLOPRTVXZ\\^_abdeghjlmnpqrtuvxyz|}~"
+    },
+    {
+      "offset": "0x0CF141",
+      "text": "#*.27:=@DFHKMORSUWY[]_abdeghjkmopqrtuvwyz{|~"
+    },
+    {
+      "offset": "0x0CF240",
+      "text": "!'.26;>ADGILNQSVWY[]^`bdeghjkmnprstuvwyz{|}~"
+    },
+    {
+      "offset": "0x0CF350",
+      "text": " \"$&(*,./13568:<>?ACDFHIKMNPRSUVXY[]^`acefhiklnoqrtuwxz{}~"
+    },
+    {
+      "offset": "0x0CF44F",
+      "text": "!\"$&()+-/024579:<>?ACDFHIKMNPRSUVXY[\\^_abdefhiklmoprsuvwyz|}~"
+    },
+    {
+      "offset": "0x0CF54E",
+      "text": " \"#%')*,.013568:;=?@BCEFHIKLNOQRTUWXZ[]^`acdeghiklmopqstuwxy{|}"
+    },
+    {
+      "offset": "0x0CF64E",
+      "text": "!#$&(*+-/124578:;=?@BCEFHIKLNOQRSUVXYZ\\]_`bcdeghijlmnoqrstvwxy{|}~"
+    },
+    {
+      "offset": "0x0CF74D",
+      "text": " \"$%')+,.0235689;<>@ABDEGHIKLNOQRSUVWYZ[]^_abcdefhijklmopqrtuvwyz{|~"
+    },
+    {
+      "offset": "0x0CF84C",
+      "text": " \"$&')+-.024578:;=>@BCDFGHJKLNOPRSTUWXYZ\\]^_abcdefhijklmopqrstvwxyz{}~"
+    },
+    {
+      "offset": "0x0CF94B",
+      "text": " \"$&()+-/024678:;=>@ACDEGHIKLMOPQSTUVXYZ[]^_`bcdefgijklmnpqrstuvwxyz{|}~"
+    },
+    {
+      "offset": "0x0CFA4A",
+      "text": " \"$&(*+-/124689:<=?@BCEFGIJKMNOQRSUVWXYZ\\]^_`acdefghijklmnpqrstuvwxyz{||}~"
+    },
+    {
+      "offset": "0x0CFB49",
+      "text": "\"$&(*,./13568:<=>@ACDFGIJKMNOQRSUVWYZ[\\]^`abcdeghijklmnopqrtuvwxyz{|}~"
+    },
+    {
+      "offset": "0x0CFC47",
+      "text": " #&(*,.03468:;=?ABDEGHJKMOPQRTUVWYZ[\\^_`abcefghijlmnopqrstuvwyz{|}~"
+    },
+    {
+      "offset": "0x0CFD46",
+      "text": "!$'*,.13589;=?@BDFGIJLMOPRTUVXYZ\\]^`abdefghijklmnoqrstuvwxyz{|~~"
+    },
+    {
+      "offset": "0x0CFE45",
+      "text": "$&),/1368:=>@BDFHJLMOPRSUVXZ[\\^_`bcdfghjklmnopqrstuwxyz{|}~"
+    },
+    {
+      "offset": "0x0CFF44",
+      "text": "#(+.1579<>@CDFHJLNPRSUVXY[\\^`abcefghjklmopqrstvwxyz{}~"
+    },
+    {
+      "offset": "0x0D0042",
+      "text": " $).147:<?ADFIJLNPRTVXY[\\^_abdfghjklnoprstvwxyz{|}~"
+    },
+    {
+      "offset": "0x0D0142",
+      "text": "&+058;>BDGILNQRTVXZ\\^`acdfgijlnopqstuvxyz{}~"
+    },
+    {
+      "offset": "0x0D0B7A",
+      "text": " !\"\"#$%%&'())*+,-../01234456789:;<=>?@AABCDEFGHIJKLNOPQRSTUVWXYZ[]^_`abcdfghijkmnopqstuvxyz{|~"
+    },
+    {
+      "offset": "0x0D0C6C",
+      "text": " !\"\"#$%&&'()*++,-./011234567899:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdfghijklmnoqrstuvwxz{|}~"
+    },
+    {
+      "offset": "0x0D0D61",
+      "text": " !\"#$%%&'()*++,-./01233456789:;<=>?@@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefgijklmnopqrstuvwxz{|}~"
+    },
+    {
+      "offset": "0x0D0E57",
+      "text": "  !\"#$%&'()*+,,-./0123456789:;<=>??@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuwxyz{|}~"
+    },
+    {
+      "offset": "0x0D0F50",
+      "text": " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+    },
+    {
+      "offset": "0x0D1045",
+      "text": " !\"$%&')*+,-/012345789:;<=>?ABCDEFGHIJKLNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+    },
+    {
+      "offset": "0x0D113E",
+      "text": " \"$%'(*+-./1245689:;=>?@BCDEFHIJKLNOPQRSTUWXYZ[\\]^_`abcdefghjklmnopqrsstuvwxyz{|}~"
+    },
+    {
+      "offset": "0x0D1239",
+      "text": " \"$&(*,./134689;<>?@BCEFGIJKMNOPRSTUVXYZ[\\]_`abcdefghjklmnopqrstuvwxyz{|}~"
+    },
+    {
+      "offset": "0x0D2624",
+      "text": "}yuqmid`ZUOI"
+    },
+    {
+      "offset": "0x0D2635",
+      "text": "}xtpmjgeca_^\\[ZXWVUSRQONLKI"
+    },
+    {
+      "offset": "0x0D2666",
+      "text": "}ytoje_XQI"
+    },
+    {
+      "offset": "0x0D2674",
+      "text": "|vqmiec`^\\ZYWVUTSRQQPOONMLJI"
+    },
+    {
+      "offset": "0x0D2FEC",
+      "text": "GBv@w"
+    },
+    {
+      "offset": "0x0D3030",
+      "text": "\\l]D^"
+    },
+    {
+      "offset": "0x0D303A",
+      "text": "fCgyh"
+    },
+    {
+      "offset": "0x0D3040",
+      "text": "ixj(zf"
+    }
+  ]
+}
