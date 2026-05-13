@@ -100,35 +100,3 @@ patched = data[:-2] + b'\xff' * pad + data[-2:]
 open('output_padded.jpg','wb').write(patched)
 "
 ```
-
-## Design Direction: Dark Minimal (Concept A)
-
-### Visual Style
-- Background: pure black #000000
-- Primary text/icons: white #FFFFFF
-- Secondary/unselected: gray #888888
-- Accent highlight: brightness increase only (no color)
-- Typography: monospace, uppercase labels
-- Icons: minimal outlined style, single-weight stroke
-- No gradients, no shadows, no 3D effects
-- High contrast for tiny 320x240 LCD readability
-
-### Main Menu (target: 2x2 grid, 4 items)
-- PHOTO: lens/aperture outline icon
-- VIDEO: play triangle outline icon
-- GALLERY: stacked frames outline icon (renamed from "Playback")
-- SETTINGS: gear outline icon
-
-### Items to Remove
-- Games (controller icon, #32)
-- MP3/Music (treble clef icon, #30)
-
-### Settings Menu (keep all 15 items, restyle)
-- Same icons but redrawn in outlined white-on-dark style
-- Selected state (112x112): white outlined icon
-- Unselected state (64x64): gray outlined icon
-
-### Status Bar Elements
-- Battery: minimal segmented outline
-- Storage: simple "SD" text or card outline
-- Counter digits: monospace numerals, clean sans-serif
