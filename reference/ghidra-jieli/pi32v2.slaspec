@@ -1,0 +1,425 @@
+define endian    = little;
+define alignment = 2;
+
+define space ram      type=ram_space      size=4 default;
+define space register type=register_space size=4;
+
+#############################################################################
+#
+# General purpose registers
+#
+define register offset=0x0 size=4
+	[ r0 r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 r11 r12 r13 r14 r15 ];
+
+# Paired registers
+define register offset=0x0 size=8
+	[ r0_r1 r2_r3 r4_r5 r6_r7 r8_r9 r10_r11 r12_r13 r14_r15 ];
+
+#
+# Special function registers
+#
+define register offset=0x100 size=4
+	[ reti rete retx rets sr4 psr cnum sr7
+	  sr8  sr9  sr10 icfg usp ssp sp   pc ];
+
+#############################################################################
+#
+# Instruction tokens
+#
+
+# Base word
+define token instr(16)
+	group = (13,15)
+
+	#
+	# instruction type fields
+	#
+	ins0012 = (0,12)
+	ins0312 = (3,12)
+	ins0412 = (4,12)
+	ins0612 = (6,12)
+	ins0712 = (7,12)
+	ins0812 = (8,12)
+	ins0912 = (9,12)
+
+	ins0307 = (3,7)
+	ins0407 = (4,7)
+	ins0607 = (6,7)
+	ins0707 = (7,7)
+
+	ins0004 = (0,4)
+	ins0304 = (3,4)
+
+	ins0003 = (0,3)
+	ins0203 = (2,3)
+	ins0303 = (3,3)
+
+	#
+	# immediate fields
+	#
+	imm0001s = (0,1) signed
+
+	imm0002 = (0,2)
+
+	imm0005s = (0,5) signed
+	imm0305  = (3,5)
+	imm0305s = (3,5) signed
+
+	imm0506  = (5,6)
+	imm0406s = (4,6) signed
+
+	imm0407  = (4,7)
+	imm0507s = (5,7) signed
+
+	imm0812  = (8,12)
+	imm0812s = (8,12) signed
+
+	#
+	# register fields
+	#
+	regA = (0,3)
+	regB = (4,7)
+
+	regAl = (0,2)
+	regAh = (0,2)
+	regBl = (4,6)
+
+	regCxle = (7,8)
+	regCxlo = (7,8)
+	regCxs  = (3,3)
+
+	dregA = (1,3)
+	dregB = (5,7)
+
+	sregA = (0,3)
+;
+
+# Used by the group=7 instructions
+define token instr2(16)
+	imm1631 = (0,15)
+;
+
+# Even more bits for some group=7 instructions (ins0812=0x1f)
+define token instr3(16)
+	imm3247 = (0,15)
+;
+
+#############################################################################
+#
+# Variables
+#
+
+attach variables [ regAl regBl ]
+	[ r0 r1 r2 r3 r4 r5 r6 r7 ];
+
+attach variables [ regAh ]
+	[ r8 r9 r10 r11 r12 r13 r14 r15 ];
+
+attach variables [ regA regB ]
+	[ r0 r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 r11 r12 r13 r14 r15 ];
+
+attach variables [ sregA ]
+	[ reti rete retx rets sr4 psr cnum sr7
+	  sr8  sr9  sr10 icfg usp ssp sp   pc ];
+
+attach variables [ dregA dregB ]
+	[ r0_r1 r2_r3 r4_r5 r6_r7 r8_r9 r10_r11 r12_r13 r14_r15 ];
+
+attach variables [ regCxle ]
+	[ r0 r2 r4 r6 ];
+
+attach variables [ regCxlo ]
+	[ r1 r3 r5 r7 ];
+
+# PSR bits
+@define V	"psr[0,1]"	# overflow
+@define C	"psr[1,1]"	# carry
+@define Z	"psr[2,1]"	# zero
+@define N	"psr[3,1]"	# negative
+
+#############################################################################
+#
+# Macros
+#
+
+macro push(reg)
+{
+	sp = sp - 4;
+	*:4 sp = reg;
+}
+
+macro pop(reg)
+{
+	reg = *:4 sp;
+	sp = sp + 4;
+}
+
+#############################################################################
+#
+# Stuff
+#
+
+# weird register split addressing..
+regCxl: regCxle is regCxs=0 & regCxle { export regCxle; }
+regCxl: regCxlo is regCxs=1 & regCxlo { export regCxlo; }
+
+#
+# 9-bit jump immediate (pc-relative)
+#
+jaddr9: res is imm0812 & imm0406s
+	[ res = ((imm0406s << 6) | (imm0812 << 1)) + inst_next; ]
+	{ export *:4 res; }
+
+#
+# 12-bit jump immediate (pc-relative)
+#
+jaddr12: res is imm0812 & imm0407 & imm0001s
+	[ res = ((imm0001s << 10) | (imm0407 << 6) | (imm0812 << 1)) + inst_next; ]
+	{ export *:4 res; }
+
+#
+# 23-bit jump immediate (pc-relative)
+#
+jaddr23: res is imm0005s ; imm1631
+	[ res = ((imm0005s << 17) | (imm1631 << 1)) + inst_next; ]
+	{ export *:4 res; }
+
+#############################################################################
+#
+# Instructions
+#
+
+define pcodeop nop;
+define pcodeop Idle;
+define pcodeop Breakpoint;
+define pcodeop HBreakpoint;
+define pcodeop CoreSynchronize;
+define pcodeop SystemCall;
+define pcodeop SystemSynchronize;
+define pcodeop BTBClear;
+define pcodeop ClearLock;
+define pcodeop SetLock;
+define pcodeop DisableInterrupts;
+define pcodeop EnableInterrupts;
+define pcodeop SoftwareInterrupt;
+define pcodeop DataCachePrefetch;
+define pcodeop InstructionCacheFlush;
+define pcodeop DataCacheFlush;
+define pcodeop DataCacheLineInvalidate;
+define pcodeop Trigger;
+
+define pcodeop IfElseBlock;
+define pcodeop RepeatBlock;
+
+define pcodeop TODO;
+
+# Categorized
+@include "pi32v2_ins_progflow.sinc"
+@include "pi32v2_ins_stack.sinc"
+@include "pi32v2_ins_move.sinc"
+@include "pi32v2_ins_arithops.sinc"
+@include "pi32v2_ins_logicops.sinc"
+@include "pi32v2_ins_shiftrot.sinc"
+@include "pi32v2_ins_bitops.sinc"
+@include "pi32v2_ins_loadimm.sinc"
+@include "pi32v2_ins_loadstore.sinc"
+
+##########################################################################################
+# Uncategorized #
+#################
+
+#
+# nop
+#
+:nop is group=0 & ins0012=0x0000
+{
+	nop();
+}
+
+#
+# idle
+#
+:idle is group=0 & ins0012=0x0001
+{
+	Idle();
+}
+
+#
+# bkpt
+#
+:bkpt is group=0 & ins0012=0x0002
+{
+	Breakpoint();
+}
+
+#
+# hbkpt
+#
+:hbkpt is group=0 & ins0012=0x0003
+{
+	HBreakpoint();
+}
+
+#
+# csync
+#
+:csync is group=0 & ins0012=0x0020
+{
+	CoreSynchronize();
+}
+
+#
+# syscall
+#
+:syscall is group=0 & ins0012=0x0021
+{
+	SystemCall();
+}
+
+#
+# ssync
+#
+:ssync is group=0 & ins0012=0x0022
+{
+	SystemSynchronize();
+}
+
+#
+# btbclr
+#
+:btbclr is group=0 & ins0012=0x0023
+{
+	BTBClear();
+}
+
+#
+# lockclr
+#
+:lockclr is group=0 & ins0012=0x0040
+{
+	ClearLock();
+}
+
+#
+# lockset
+#
+:lockset is group=0 & ins0012=0x0041
+{
+	SetLock();
+}
+
+#
+# cli
+#
+:cli is group=0 & ins0012=0x0060
+{
+	DisableInterrupts();
+}
+
+#
+# sti
+#
+:sti is group=0 & ins0012=0x0061
+{
+	EnableInterrupts();
+}
+
+#
+# swi imm3
+#
+:swi imm0002 is group=0 & ins0412=0x00A & imm0002
+{
+	SoftwareInterrupt(imm0002:1);
+}
+
+#
+# testset b[rA]
+#
+:testset "b"[regA] is group=0 & ins0412=0x00B & regA
+{
+	TODO(regA:4);
+}
+
+#
+# cli rA
+#
+:cli regA is group=0 & ins0412=0x00E & regA
+{
+	DisableInterrupts(regA:4);
+}
+
+#
+# sti rA
+#
+:sti regA is group=0 & ins0412=0x00F & regA
+{
+	EnableInterrupts(regA:4);
+}
+
+#
+# pfetch [rA]
+#
+:pfetch [regA] is group=0 & ins0412=0x020 & regA
+{
+	DataCachePrefetch(regA:4);
+}
+
+#
+# iflush [rA]
+#
+:iflush [regA] is group=0 & ins0412=0x021 & regA
+{
+	InstructionCacheFlush(regA:4);
+}
+
+#
+# flush [rA]
+#
+:flush [regA] is group=0 & ins0412=0x022 & regA
+{
+	DataCacheFlush(regA:4);
+}
+
+#
+# flushinv [rA]
+#
+:flushinv [regA] is group=0 & ins0412=0x023 & regA
+{
+	DataCacheLineInvalidate(regA:4);
+}
+
+#
+# cc = 0
+# => clc
+#
+:clc is group=0 & ins0012=0x1400
+{
+	$(C) = 0;
+}
+
+#
+# cc = 1
+# => stc
+#
+:stc is group=0 & ins0012=0x1401
+{
+	$(C) = 1;
+}
+
+#
+# rA_rA = 0
+# => clr rA_rA
+#
+:clr dregA is group=0 & ins0412=0x148 & dregA
+{
+	dregA = 0;
+}
+
+#
+# rA<8-15> = 0
+# => clr rA<8-15>
+#
+:clr regAh is group=0 & ins0312=0x298 & regAh
+{
+	regAh = 0;
+}

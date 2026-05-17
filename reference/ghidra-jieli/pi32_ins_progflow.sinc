@@ -1,0 +1,285 @@
+##################
+#
+# Program Flow Control
+#
+##################
+
+#
+# Conditions
+#
+
+#0: eq       s (nzcv == 0)
+#1: ne       s (nzcv != 0)
+#2: cs         (nzcv >= 0)
+#3: cc         (nzcv <  0)
+#4: mi       s (nzcv ?? 0)
+#5: pl       s (nzcv ?? 0)
+#6: vs       s (nzcv ?? 0)
+#7: vc       s (nzcv ?? 0)
+#8: hi         (nzcv >  0)
+#9: ls         (nzcv <= 0)
+#A: ge       s (nzcv >= 0)
+#B: lt       s (nzcv <  0)
+#C: gt       s (nzcv >  0)
+#D: le       s (nzcv <= 0)
+#E:          s (nzcv ?? 0)
+
+### duplicates ?? needs to be resolved!
+
+# if (<cond>) { <true> } else { <false> }
+cond0407: "eq" is ins0407=0x0 { tmp:1 = ($(Z)) == 1;                 export tmp; }
+cond0407: "ne" is ins0407=0x1 { tmp:1 = ($(Z)) == 0;                 export tmp; }
+cond0407: "cs" is ins0407=0x2 { tmp:1 = ($(C)) == 1;                 export tmp; }
+cond0407: "cc" is ins0407=0x3 { tmp:1 = ($(C)) == 0;                 export tmp; }
+cond0407: "mi" is ins0407=0x4 { tmp:1 = ($(N)) == 1;                 export tmp; }
+cond0407: "pl" is ins0407=0x5 { tmp:1 = ($(N)) == 0;                 export tmp; }
+cond0407: "vs" is ins0407=0x6 { tmp:1 = ($(V)) == 1;                 export tmp; }
+cond0407: "vc" is ins0407=0x7 { tmp:1 = ($(V)) == 0;                 export tmp; }
+cond0407: "hi" is ins0407=0x8 { tmp:1 = ($(C) || $(Z)) == 0;         export tmp; }	# NOT SURE
+cond0407: "ls" is ins0407=0x9 { tmp:1 = ($(C) || $(Z)) == 1;         export tmp; }	# NOT SURE
+cond0407: "ge" is ins0407=0xA { tmp:1 = ($(N) ^^ $(V)) == 0;         export tmp; }
+cond0407: "lt" is ins0407=0xB { tmp:1 = ($(N) ^^ $(V)) == 1;         export tmp; }
+cond0407: "gt" is ins0407=0xC { tmp:1 = ($(N) ^^ $(V) || $(Z)) == 0; export tmp; }
+cond0407: "le" is ins0407=0xD { tmp:1 = ($(N) ^^ $(V) || $(Z)) == 1; export tmp; }
+cond0407: ""   is ins0407=0xE { tmp:1 = 1;                           export tmp; }
+
+# if (<cond>) goto X
+cond0811: "eq" is ins0811=0x0 { tmp:1 = ($(Z)) == 1;                 export tmp; }
+cond0811: "ne" is ins0811=0x1 { tmp:1 = ($(Z)) == 0;                 export tmp; }
+cond0811: "cs" is ins0811=0x2 { tmp:1 = ($(C)) == 1;                 export tmp; }
+cond0811: "cc" is ins0811=0x3 { tmp:1 = ($(C)) == 0;                 export tmp; }
+cond0811: "mi" is ins0811=0x4 { tmp:1 = ($(N)) == 1;                 export tmp; }
+cond0811: "pl" is ins0811=0x5 { tmp:1 = ($(N)) == 0;                 export tmp; }
+cond0811: "vs" is ins0811=0x6 { tmp:1 = ($(V)) == 1;                 export tmp; }
+cond0811: "vc" is ins0811=0x7 { tmp:1 = ($(V)) == 0;                 export tmp; }
+cond0811: "hi" is ins0811=0x8 { tmp:1 = ($(C) || $(Z)) == 0;         export tmp; }	# NOT SURE
+cond0811: "ls" is ins0811=0x9 { tmp:1 = ($(C) || $(Z)) == 1;         export tmp; }	# NOT SURE
+cond0811: "ge" is ins0811=0xA { tmp:1 = ($(N) ^^ $(V)) == 0;         export tmp; }
+cond0811: "lt" is ins0811=0xB { tmp:1 = ($(N) ^^ $(V)) == 1;         export tmp; }
+cond0811: "gt" is ins0811=0xC { tmp:1 = ($(N) ^^ $(V) || $(Z)) == 0; export tmp; }
+cond0811: "le" is ins0811=0xD { tmp:1 = ($(N) ^^ $(V) || $(Z)) == 1; export tmp; }
+cond0811: ""   is ins0811=0xE { tmp:1 = 1;                           export tmp; }
+
+# else 300
+cond1619: "eq" is ins1619=0x0 { tmp:1 = ($(Z)) == 1;                 export tmp; }
+cond1619: "ne" is ins1619=0x1 { tmp:1 = ($(Z)) == 0;                 export tmp; }
+cond1619: "cs" is ins1619=0x2 { tmp:1 = ($(C)) == 1;                 export tmp; }
+cond1619: "cc" is ins1619=0x3 { tmp:1 = ($(C)) == 0;                 export tmp; }
+cond1619: "mi" is ins1619=0x4 { tmp:1 = ($(N)) == 1;                 export tmp; }
+cond1619: "pl" is ins1619=0x5 { tmp:1 = ($(N)) == 0;                 export tmp; }
+cond1619: "vs" is ins1619=0x6 { tmp:1 = ($(V)) == 1;                 export tmp; }
+cond1619: "vc" is ins1619=0x7 { tmp:1 = ($(V)) == 0;                 export tmp; }
+cond1619: "hi" is ins1619=0x8 { tmp:1 = ($(C) || $(Z)) == 0;         export tmp; }	# NOT SURE
+cond1619: "ls" is ins1619=0x9 { tmp:1 = ($(C) || $(Z)) == 1;         export tmp; }	# NOT SURE
+cond1619: "ge" is ins1619=0xA { tmp:1 = ($(N) ^^ $(V)) == 0;         export tmp; }
+cond1619: "lt" is ins1619=0xB { tmp:1 = ($(N) ^^ $(V)) == 1;         export tmp; }
+cond1619: "gt" is ins1619=0xC { tmp:1 = ($(N) ^^ $(V) || $(Z)) == 0; export tmp; }
+cond1619: "le" is ins1619=0xD { tmp:1 = ($(N) ^^ $(V) || $(Z)) == 1; export tmp; }
+cond1619: ""   is ins1619=0xE { tmp:1 = 1;                           export tmp; }
+
+
+###########################################################################################
+# Return from Subroutine/Interrupt/Exception(emulation?)
+###########################################################################################
+
+#
+# rts
+#
+:rts is group=0 & ins0012=0x0020
+{
+	return [rets];
+}
+
+#
+# rti
+#
+:rti is group=0 & ins0012=0x0030
+{
+	return [reti];
+}
+
+#
+# rte
+#
+:rte is group=0 & ins0012=0x0038
+{
+	return [rete];
+}
+
+###########################################################################################
+# Goto (Jump)
+###########################################################################################
+
+#
+# goto rA
+# j rA
+#
+:j regAf is group=0 & ins0712=0x03 & ins0305=4 & regAf
+{
+	goto [regAf];
+}
+
+#
+# goto reladdr11
+# j reladdr11
+#
+:j jaddr11 is group=0 & ins1112=1 & jaddr11
+{
+	goto jaddr11;
+}
+
+#
+# goto reladdr24
+# j reladdr24
+#
+:j jaddr24 is (group=7 & ins0812=0x1A) ... & jaddr24
+{
+	goto jaddr24;
+}
+
+###########################################################################################
+# Call
+###########################################################################################
+
+#
+# call rA
+#
+:call regAf is group=0 & ins0712=0x03 & ins0305=5 & regAf
+{
+	call [regAf];
+}
+
+#
+# call reladdr8
+#
+:call jaddr8 is group=0 & ins0812=0x4 & jaddr8
+{
+	call jaddr8;
+}
+
+#
+# call reladdr24
+#
+:call jaddr24 is (group=7 & ins0812=0x01) ... & jaddr24
+{
+	call jaddr24;
+}
+
+###########################################################################################
+# Table Branch
+###########################################################################################
+
+#
+# tbb [rA]
+# tbb rA
+#
+:tbb regAf is group=0 & ins0712=0x03 & ins0305=6 & regAf
+{
+	local addr:4 = inst_next + regAf;
+	pc = inst_next + (zext(*:1 addr) << 1);
+	goto [pc];
+}
+
+#
+# tbh [rA]
+# tbh rA
+#
+:tbh regAf is group=0 & ins0712=0x03 & ins0305=7 & regAf
+{
+	local addr:4 = inst_next + regAf;
+	pc = inst_next + (zext(*:2 addr) << 1);
+	goto [pc];
+}
+
+###########################################################################################
+# Condititonal branch
+###########################################################################################
+
+#
+# if (<cond>) goto reladdr8
+# j<cond> reladdr8
+#
+:j^cond0811 jaddr8 is group=0 & ins1212=1 & cond0811 & jaddr8
+{
+	if (cond0811)
+		goto jaddr8;
+}
+
+# 
+# if (<cond>) goto rA
+# j<cond> rA
+#
+:j^cond1619 regF is group=7 & ins0012=0x0000 ; cond1619 & regF
+{
+	if (cond1619)
+		goto regF;
+}
+
+# 
+# if (<cond>) goto rA
+# j<cond> rA
+#
+:j^cond1619 jaddr20 is (group=7 & ins0812=0x1B ; cond1619) & jaddr20
+{
+	if (cond1619)
+		goto jaddr20;
+}
+
+###########################################################################################
+# Jump if zero/nonzero
+###########################################################################################
+
+#
+# if (rA == 0) goto reladdr7
+# jz rA, reladdr7
+#
+:jz regAl, jaddr7 is group=1 & ins1112=0 & ins0303=0 & jaddr7 & regAl
+{
+	if (regAl == 0)
+		goto jaddr7;
+}
+
+#
+# if (rA != 0) goto reladdr7
+# jnz rA, reladdr7
+#
+:jnz regAl, jaddr7 is group=1 & ins1112=0 & ins0303=1 & jaddr7 & regAl
+{
+	if (regAl != 0)
+		goto jaddr7;
+}
+
+###########################################################################################
+# Code repeat     ( Impossible to implement? )
+###########################################################################################
+
+#
+# rep rA { <N instrunction words> }
+# rep <N instruction words>, rA
+#
+:rep bra0305, regAf is group=0 & ins0712=0x02 & bra0305 & regAf
+{
+	RepeatBlock(bra0305:1, regAf:4);
+}
+
+#
+# rep rA { <N instrunction words> }
+# rep <N instruction words>, rA
+#
+:rep bra0507, imm0004 is group=0 & ins0812=0x12 & bra0507 & imm0004
+{
+	RepeatBlock(bra0507:1, imm0004:1);
+}
+
+###########################################################################################
+# If/else     ( Impossible to implement? )
+###########################################################################################
+
+#
+# if (<cond>) { <true block> } else { <else block> }
+# if<cond> <else block> <true block>
+#
+:if^cond0407 bra0203, bra0001 is group=0 & ins0812=0x03 & cond0407 & bra0203 & bra0001
+{
+	IfElseBlock(cond0407:1, bra0203:1, bra0001:1);
+}

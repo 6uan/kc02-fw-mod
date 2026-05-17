@@ -1,0 +1,70 @@
+##################
+#
+# Stack Operations
+#
+##################
+
+#
+# pc = [sp++]
+# => pop pc
+#
+:pop pc is group=0 & ins0012=0x0400 & pc
+{
+	pop(pc);
+	return [pc];
+}
+
+#
+# [--sp] = rets
+# => push rets
+#
+:push rets is group=0 & ins0012=0x0410 & rets
+{
+	push(rets);
+}
+
+#
+# {rets, regs...} = [sp++]
+# => pop {rets, regs...}
+#
+:pop {rets, ins0003} is group=0 & ins0412=0x043 & ins0003 & rets
+{
+	pop(rets);
+}
+
+#
+# {regs...} = [sp++]
+# => pop {regs...}
+#
+:pop {ins0003} is group=0 & ins0412=0x044 & ins0003
+{
+
+}
+
+#
+# {pc, regs...} = [sp++]
+# => pop {pc, regs...}
+#
+:pop {pc, ins0003} is group=0 & ins0412=0x045 & ins0003 & pc
+{
+	pop(pc);
+	return [pc];
+}
+
+#
+# [--sp] = {rets, regs...}
+# => push {rets, regs...}
+#
+:push {rets, ins0003} is group=0 & ins0412=0x046 & ins0003 & rets
+{
+	push(rets);
+}
+
+#
+# [--sp] = {regs...}
+# => push {regs...}
+#
+:push {ins0003} is group=0 & ins0412=0x047 & ins0003
+{
+
+}

@@ -32,6 +32,16 @@ data[0x0C] = (256 - header_sum) % 256
 open('DestBin.bin', 'wb').write(data)
 ```
 
+### Flash Test Results
+
+| Flash | Change | Result |
+|-------|--------|--------|
+| #15 | Dispatch table swap (entry 4 games→camera) | NO EFFECT — table not used for menu selection |
+| #16 | ADC button remap (UP↔DOWN key_id swap) | SUCCESS — buttons swapped as expected |
+| #17 | Asset index swap (entry 0↔4, camera↔games) | SUCCESS — icons visually swapped, handlers stay positional |
+| #18 | Key event handler entry 1 (NULL→0x02004CC8) | NO EFFECT — long-press OK still does nothing |
+| #19 | Key event handler swap (entry 0↔9) | NO EFFECT — OK and UP unchanged |
+
 ### Safety
 - DestBin.bin IS the full flash image (starts at offset 0)
 - The bootloader IS overwritten during flashing — no recovery if interrupted
@@ -122,8 +132,19 @@ Then proceed with asset-only modifications (no code section changes).
 
 Grid: 2 rows x 3 columns, 100px horizontal spacing, 108px vertical spacing.
 
+### Menu Asset Index Table (0x07E178) — PATCHABLE
+Confirmed patchable (Flash #17). Swapping entries 0↔4 visually swapped the
+camera and games icons. Handlers remain positional — selecting position 0 still
+launches camera regardless of which icon is drawn there. This table controls
+rendering only, not functionality.
+
 ### Handler/Callback Table (0x07DF08)
-First 6 entries are menu item selection callbacks:
+**NOT used for menu item selection** — patching entry 4 (Games→Camera) had no
+visible effect (Flash #15). The handlers are likely called via coded switch/case
+with relative branch offsets. This table is used by the UI state machine's
+main event loop, not for initial mode entry from the menu.
+
+First 6 entries correspond to UI states:
 
 | Entry | RAM Addr | Flash Code | Item |
 |-------|----------|-----------|------|
@@ -153,6 +174,67 @@ The value 6 is NOT in a data table — it's immediate operands in pi32 instructi
 - Addresses: 0x002F74, 0x003B64, 0x003E6C, 0x004038, 0x004058, 0x004090
 - Keep as 2 if using 2x2 grid
 
+## Hardware (Confirmed via SELFTEST.bin)
+
+| Component | ID | Notes |
+|-----------|-----|-------|
+| SoC | AX3292 | JieLi AC2546 family, pi32 RISC core |
+| Image sensor | H63P | |
+| LCD | st3030b | 320x240 IPS |
+| G-sensor | NULL | Not populated |
+| U-sensor | offline | Not active |
+| Buttons | ADC resistor ladder | Idle ~1019 |
+
+### Button ADC Values
+| Button | ADC Value |
+|--------|-----------|
+| Power | 22-23 |
+| Left | 251-252 |
+| OK | 387-390 |
+| Down | 509-512 |
+| Up | 655-660 |
+| Right | 783-785 |
+
+### ADC Button Threshold Table (0x0C4C80)
+The firmware uses an ADC resistor ladder for button input. A threshold table at
+file offset `0x0C4C80` maps ADC readings to key IDs. 7 entries × 8 bytes each:
+`[u32 reserved (0)] [u16 key_id] [u16 adc_center]`
+
+| Entry | Offset | Key ID | Button | ADC Center | Patch Bytes |
+|-------|--------|--------|--------|------------|-------------|
+| 0 | 0x0C4C80 | 0 | SENTINEL | 0 | -- |
+| 1 | 0x0C4C88 | 26 | OK | 386 | 0x0C4C8C-8D |
+| 2 | 0x0C4C90 | 30 | RIGHT | 776 | 0x0C4C94-95 |
+| 3 | 0x0C4C98 | 29 | LEFT | 252 | 0x0C4C9C-9D |
+| 4 | 0x0C4CA0 | 27 | UP | 657 | 0x0C4CA4-A5 |
+| 5 | 0x0C4CA8 | 28 | DOWN | 510 | 0x0C4CAC-AD |
+| 6 | 0x0C4CB0 | 36 | POWER | 12 | 0x0C4CB4-B5 |
+
+**Remapping buttons**: Change the key_id field to remap physical buttons.
+E.g., swapping UP/DOWN key_ids (27↔28) makes them act as each other.
+Use `build.py --remap-button up=down --remap-button down=up`.
+
+### ADC Driver Structure (0x0C4C44)
+- Driver name: "ad-key" (string at 0x0C4C44)
+- Init function: 0x002E0C
+- Handler function: 0x003A60
+- Key scan function: 0x004CC8
+
+### Key Event Handlers (0x0C4CBC) — NOT PATCHABLE
+19 x u32 values originally assumed to be function pointers (3 per button × 6 + sentinel).
+Two patch tests (Flash #18: set entry, Flash #19: swap entries) had NO EFFECT.
+Either copied to RAM at init (flash copy ignored) or misidentified as key event handlers.
+
+## Hidden Firmware Modes
+
+| Filename | Offset | Behavior |
+|----------|--------|----------|
+| DestBin.bin | 0x07DE87 | Standard firmware update |
+| SELFTEST.bin | 0x07DFE5 | Factory diagnostic screen (shows hardware IDs, ADC, battery, sensor) |
+| exmend.bin | 0x07DF94 | Unknown — possibly alternate update file, untested |
+
+Place file on SD card root (FAT32) and power on. Camera checks for these filenames during boot.
+
 ## Memory Map
 
 | Range | Size | Content |
@@ -166,3 +248,54 @@ The value 6 is NOT in a data table — it's immediate operands in pi32 instructi
 | 0x0D3200-0x0D3510 | 784 B | Asset table (97x8 byte entries) |
 | 0x0D3510-0x3071FF | 2,256 KB | Asset data (JPEGs, BMPs, WAVs, etc.) |
 | 0x307200-0x3FFFFF | 995 KB | Erased flash (0xFF) |
+
+## UI State Machine (0x07DF08)
+
+The dispatch table has **35 entries**, not just 6. Entries 0-5 are the main menu handlers.
+16 entries point to the null/default handler at 0x02006DD4. ~13 unique active handlers exist.
+
+| Entry | Handler | Function |
+|-------|---------|----------|
+| 0 | 0x0200411C | handler_camera |
+| 1 | 0x02003E74 | handler_video |
+| 2 | 0x02003EF0 | handler_music |
+| 3 | 0x02003F90 | handler_playback |
+| 4 | 0x02004014 | handler_games |
+| 5 | 0x02004098 | handler_settings |
+| 6 | 0x02006D58 | handler_state_06 |
+| 12 | 0x02006CCC | handler_state_12 |
+| 13 | 0x02006D00 | handler_state_13 |
+| 14 | 0x02006CE0 | handler_state_14 |
+| 17 | 0x02006CBC | handler_state_17 |
+| 19 | 0x02006D10 | handler_state_19 |
+| 20 | 0x02006CF8 | handler_state_20 |
+| 21 | 0x02006D60 | handler_state_21 |
+| 22 | 0x02006D6C | handler_state_22 |
+| 27 | 0x02006DC0 | handler_state_27 |
+| 32 | 0x02006D78 | handler_state_32 |
+| 33 | 0x02006D90 | handler_state_33 |
+| 34 | 0x02006DA8 | handler_state_34 |
+| * | 0x02006DD4 | handler_null_default (16 entries) |
+
+## Disassembly Setup (Ghidra)
+
+**Processor**: JieLi pi32 — use [kagaimiq/ghidra-jieli](https://github.com/kagaimiq/ghidra-jieli)
+**Import**: Raw binary, language `pi32:LE:32:default`, base address `0x02000000`
+**Labels**: Run `tools/ghidra_label.py` via Script Manager (20 functions + 25 data labels)
+**Generate**: `python3 tools/ghidra_import.py` regenerates the label script from source data
+
+## Key Data Tables
+
+| Offset | Name | Size | Content |
+|--------|------|------|---------|
+| 0x07DF08 | ui_state_dispatch | 35 x u32 | Function pointers for UI states |
+| 0x07E000 | init_callback_table | 10 x u32 | Boot initialization callbacks |
+| 0x07E160 | menu_coord_table | 6 x (u16,u16) | Menu icon x,y positions |
+| 0x07E178 | menu_asset_index | 6 x u32 | SFAT indices for menu icons |
+| 0x07E19C | mode_callback_table | 5 x u32 | Mode transition callbacks |
+| 0x082A4C | dispatch_148 | 148 x u32 | Large dispatch table (unknown) |
+| 0x0844E4 | dispatch_191 | 191 x u32 | Largest dispatch table (unknown) |
+| 0x0C4C44 | adc_driver_struct | ~60 B | ADC button driver (name, init, handler) |
+| 0x0C4C80 | adc_button_table | 7 x 8 B | Button ADC thresholds + key IDs |
+| 0x0C4CBC | key_event_handlers | 19 x u32 | Button event callbacks (short/long/hold) |
+| 0x0CA660 | lookup_399 | 399 entries | Possibly sensor register table |

@@ -1,8 +1,8 @@
 {
   "firmware": {
-    "file": "/Users/mac/dump1.bin",
+    "file": "firmware/original.bin",
     "size": 4194304,
-    "md5": "7236c4c1bd3f12b1d85d33a9bebdf510",
+    "md5": "",
     "chip": "JieLi AC2546",
     "arch": "pi32",
     "flash_base": "0x02000000"

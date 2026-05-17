@@ -6,11 +6,20 @@ patched/
 __pycache__/
 *.pyc
 
+# Claude Code memory (personal)
+.claude/
+
 # Firmware dumps (users provide their own)
 firmware/*.bin
 
 # Extracted originals (copyrighted — re-extract with tools/extract_assets.py)
-originals/
+originals/*
+!originals/jpeg/
+originals/jpeg/*
+!originals/jpeg/031_0x1A6102.jpg
+
+# Internal handoff notes (personal paths, session state)
+HANDOFF.md
 
 # Temp files
 /tmp/

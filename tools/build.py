@@ -56,6 +56,9 @@ SLOTS = [
     (7,  0x11790D, 54913, "jpg", "frame_8",         ["frame"]),
     (8,  0x124F8E, 95655, "jpg", "frame_9",         ["frame"]),
 
+    # Sub-menu background (320x240 JPEG) — shared by music, games, settings
+    (9,  0x13C535, 51785, "jpg", "sub_menu_bg",     ["screen"]),
+
     # Game icons (120x120 BMP)
     (10, 0x148F7E, 43256, "bmp", "game_1",          ["game"]),
     (11, 0x153876, 43254, "bmp", "game_2",          ["game"]),
@@ -219,6 +222,7 @@ ALIASES = {
     "68_game_placeholder_120": "game_1", "69_game_placeholder_120": "game_2",
     "70_game_placeholder_120": "game_3", "71_game_placeholder_120": "game_4",
     "72_game_placeholder_120": "game_5",
+    "73_sub_menu_bg_320x240":  "sub_menu_bg",
 }
 
 
@@ -279,8 +283,32 @@ def validate_asset(filepath, slot):
     return warnings
 
 
+# ─── ADC Button Threshold Table (0x0C4C80) ───
+# 7 entries × 8 bytes: [u32 reserved][u16 key_id][u16 adc_center]
+# Physical button → table entry. Key IDs map to event handler slots.
+ADC_BUTTON_TABLE = 0x0C4C80
+ADC_BUTTONS = {
+    "ok":    {"entry": 1, "offset": 0x0C4C88, "key_id": 26, "adc": 386},
+    "right": {"entry": 2, "offset": 0x0C4C90, "key_id": 30, "adc": 776},
+    "left":  {"entry": 3, "offset": 0x0C4C98, "key_id": 29, "adc": 252},
+    "up":    {"entry": 4, "offset": 0x0C4CA0, "key_id": 27, "adc": 657},
+    "down":  {"entry": 5, "offset": 0x0C4CA8, "key_id": 28, "adc": 510},
+    "power": {"entry": 6, "offset": 0x0C4CB0, "key_id": 36, "adc": 12},
+}
+KEY_ID_TO_NAME = {v["key_id"]: k for k, v in ADC_BUTTONS.items()}
+
 MENU_BG_CONFIG = "menu_bg_offsets.json"
+MENU_BG_BASE = "menu_bg_base"
 MENU_ICON_NAMES = ["photo", "video", "music", "playback", "games", "settings"]
+
+
+def find_menu_bg_base(asset_dir):
+    asset_dir = Path(asset_dir)
+    for ext in ["png", "jpg", "jpeg", "bmp"]:
+        p = asset_dir / f"{MENU_BG_BASE}.{ext}"
+        if p.exists():
+            return p
+    return None
 
 
 def load_menu_bg_offsets(asset_dir):
@@ -373,7 +401,11 @@ def generate_menu_bg(asset_dir, bg_color=(0, 0, 0), effect=None):
         icons_layer.paste(icon, (x + dx, y + dy), icon)
         placed += 1
 
-    bg = Image.new('RGBA', (WIDTH, HEIGHT), bg_color + (255,))
+    base_path = find_menu_bg_base(asset_dir)
+    if base_path:
+        bg = Image.open(base_path).convert('RGBA').resize((WIDTH, HEIGHT), Image.LANCZOS)
+    else:
+        bg = Image.new('RGBA', (WIDTH, HEIGHT), bg_color + (255,))
     bg = Image.alpha_composite(bg, icons_layer)
 
     output = Path(asset_dir) / "07_menu_bg_320x240.jpg"
@@ -510,6 +542,161 @@ def build(args):
             patched += 1
             print(f"  [OK] #{s[0]:02d} @ 0x{s[1]:06X} — boot_screen_2 (auto-copied)")
 
+    # Dispatch table handler swaps
+    if hasattr(args, 'swap_handler') and args.swap_handler:
+        print(f"\n--- Handler Swaps ---")
+        handler_names = {
+            0x0200411C: "camera", 0x02003E74: "video", 0x02003EF0: "music",
+            0x02003F90: "playback", 0x02004014: "games", 0x02004098: "settings",
+            0x02006DD4: "null",
+        }
+        name_to_ptr = {v: k for k, v in handler_names.items()}
+        table_off = MENU_LAYOUT_REF["handler_table"]
+        for swap in args.swap_handler:
+            parts = swap.split("=")
+            if len(parts) != 2:
+                print(f"  [ERR] Bad format: {swap} (use SLOT=TARGET, e.g. 4=camera)")
+                continue
+            slot_idx = int(parts[0])
+            target = parts[1].lower()
+            if target not in name_to_ptr:
+                print(f"  [ERR] Unknown target: {target} (use: {', '.join(name_to_ptr)})")
+                continue
+            if slot_idx < 0 or slot_idx > 5:
+                print(f"  [ERR] Slot {slot_idx} out of range (0-5)")
+                continue
+            new_ptr = name_to_ptr[target]
+            off = table_off + slot_idx * 4
+            old_ptr = struct.unpack_from('<I', fw, off)[0]
+            old_name = handler_names.get(old_ptr, f"0x{old_ptr:08X}")
+            struct.pack_into('<I', fw, off, new_ptr)
+            print(f"  [OK] Slot {slot_idx} ({old_name}) → {target} (0x{new_ptr:08X}) @ 0x{off:06X}")
+
+    # Button remapping
+    if hasattr(args, 'remap_button') and args.remap_button:
+        print(f"\n--- Button Remaps ---")
+        for remap in args.remap_button:
+            parts = remap.lower().split("=")
+            if len(parts) != 2:
+                print(f"  [ERR] Bad format: {remap} (use PHYSICAL=LOGICAL, e.g. up=down)")
+                continue
+            phys, logical = parts
+            if phys not in ADC_BUTTONS:
+                print(f"  [ERR] Unknown button: {phys} (use: {', '.join(ADC_BUTTONS)})")
+                continue
+            if logical not in ADC_BUTTONS:
+                print(f"  [ERR] Unknown target: {logical} (use: {', '.join(ADC_BUTTONS)})")
+                continue
+            entry = ADC_BUTTONS[phys]
+            new_key_id = ADC_BUTTONS[logical]["key_id"]
+            off = entry["offset"] + 4  # key_id is at bytes 4-5 of the 8-byte entry
+            old_key_id = struct.unpack_from('<H', fw, off)[0]
+            old_name = KEY_ID_TO_NAME.get(old_key_id, f"id={old_key_id}")
+            struct.pack_into('<H', fw, off, new_key_id)
+            print(f"  [OK] Physical {phys.upper()} ({old_name}, id={old_key_id}) → {logical.upper()} (id={new_key_id}) @ 0x{off:06X}")
+
+    # Asset index swaps
+    if hasattr(args, 'swap_asset') and args.swap_asset:
+        print(f"\n--- Asset Index Swaps ---")
+        asset_names = {0: "camera", 1: "video", 2: "music", 3: "playback", 4: "games", 5: "settings"}
+        table_off = MENU_LAYOUT_REF["asset_table"]
+        for swap in args.swap_asset:
+            parts = swap.split("=")
+            if len(parts) != 2:
+                print(f"  [ERR] Bad format: {swap} (use A=B, e.g. 0=4)")
+                continue
+            try:
+                a, b = int(parts[0]), int(parts[1])
+            except ValueError:
+                print(f"  [ERR] Slots must be numbers: {swap}")
+                continue
+            if not (0 <= a <= 5 and 0 <= b <= 5):
+                print(f"  [ERR] Slots out of range (0-5): {swap}")
+                continue
+            off_a = table_off + a * 4
+            off_b = table_off + b * 4
+            val_a = struct.unpack_from('<I', fw, off_a)[0]
+            val_b = struct.unpack_from('<I', fw, off_b)[0]
+            struct.pack_into('<I', fw, off_a, val_b)
+            struct.pack_into('<I', fw, off_b, val_a)
+            print(f"  [OK] Slot {a} ({asset_names[a]}, SFAT#{val_a}) <-> Slot {b} ({asset_names[b]}, SFAT#{val_b}) @ 0x{off_a:06X}/0x{off_b:06X}")
+
+    # Menu icon coordinate patches
+    if hasattr(args, 'move_icons') and args.move_icons:
+        print(f"\n--- Menu Icon Positions ---")
+        presets = {
+            "column": [(112,10),(112,50),(112,90),(112,130),(112,170),(112,210)],
+            "diagonal": [(20,20),(60,60),(100,100),(140,140),(180,180),(220,220)],
+            "stock": [(12,18),(112,18),(212,18),(12,126),(112,126),(212,126)],
+        }
+        layout_str = args.move_icons.strip()
+        if layout_str in presets:
+            coords = presets[layout_str]
+            print(f"  Preset: {layout_str}")
+        else:
+            try:
+                coords = []
+                for pair in layout_str.split(";"):
+                    x, y = pair.strip().split(",")
+                    coords.append((int(x), int(y)))
+                assert len(coords) == 6
+            except (ValueError, AssertionError):
+                print(f"  [ERR] Need 6 x,y pairs separated by ; (e.g. 12,18;112,18;...)")
+                coords = None
+        if coords:
+            table_off = MENU_LAYOUT_REF["coord_table"]
+            icon_names = ["Camera", "Video", "Music", "Playback", "Games", "Settings"]
+            for i, (x, y) in enumerate(coords):
+                off = table_off + i * 4
+                old_x, old_y = struct.unpack_from('<HH', fw, off)
+                struct.pack_into('<HH', fw, off, x, y)
+                print(f"  [OK] {icon_names[i]}: ({old_x},{old_y}) -> ({x},{y}) @ 0x{off:06X}")
+
+    # Key event handler patches
+    KEY_EVENT_TABLE = 0x0C4CBC
+    KEY_EVENT_COUNT = 19
+    if hasattr(args, 'set_key_handler') and args.set_key_handler:
+        print(f"\n--- Key Event Handler Patches ---")
+        for patch in args.set_key_handler:
+            parts = patch.split("=")
+            if len(parts) != 2:
+                print(f"  [ERR] Bad format: {patch} (use ENTRY=VALUE, e.g. 1=0x02004CC8)")
+                continue
+            try:
+                entry = int(parts[0])
+                value = int(parts[1], 16) if parts[1].startswith("0x") else int(parts[1])
+            except ValueError:
+                print(f"  [ERR] Invalid entry/value: {patch}")
+                continue
+            if not (0 <= entry < KEY_EVENT_COUNT):
+                print(f"  [ERR] Entry {entry} out of range (0-{KEY_EVENT_COUNT-1})")
+                continue
+            off = KEY_EVENT_TABLE + entry * 4
+            old = struct.unpack_from('<I', fw, off)[0]
+            struct.pack_into('<I', fw, off, value)
+            print(f"  [OK] Entry {entry} @ 0x{off:06X}: 0x{old:08X} -> 0x{value:08X}")
+
+    # Raw data patches
+    if hasattr(args, 'raw_patch') and args.raw_patch:
+        print(f"\n--- Raw Patches ---")
+        for patch in args.raw_patch:
+            parts = patch.split("=", 1)
+            if len(parts) != 2:
+                print(f"  [ERR] Bad format: {patch} (use OFFSET=HEXBYTES, e.g. 0x085010=80020000)")
+                continue
+            try:
+                off = int(parts[0], 16) if parts[0].startswith("0x") else int(parts[0])
+                data = bytes.fromhex(parts[1])
+            except (ValueError, TypeError) as e:
+                print(f"  [ERR] Parse error: {e}")
+                continue
+            if off < 0 or off + len(data) > len(fw):
+                print(f"  [ERR] Offset 0x{off:06X} + {len(data)}B out of range")
+                continue
+            old = fw[off:off + len(data)]
+            fw[off:off + len(data)] = data
+            print(f"  [OK] 0x{off:06X}: {old.hex()} → {data.hex()} ({len(data)}B)")
+
     # Remove menu text labels
     if args.no_text:
         print(f"\n--- Text Label Removal ---")
@@ -590,6 +777,25 @@ if __name__ == "__main__":
     build_p.add_argument("--keep-text", action="store_true", help="Keep menu text labels")
     build_p.add_argument("--dry-run", action="store_true")
     build_p.add_argument("--sd", action="store_true", help="Copy to SD card after build")
+    build_p.add_argument("--swap-handler", action="append", metavar="SLOT=TARGET",
+                         help="Swap dispatch handler (e.g. 4=camera makes Games launch Camera). "
+                              "Slots: 0=camera 1=video 2=music 3=playback 4=games 5=settings. "
+                              "Use 'null' as target to set handler to null_default (0x02006DD4)")
+    build_p.add_argument("--swap-asset", action="append", metavar="A=B",
+                         help="Swap two menu icon asset indices (e.g. 0=4 swaps camera/games icons). "
+                              "Slots: 0=camera 1=video 2=music 3=playback 4=games 5=settings")
+    build_p.add_argument("--set-key-handler", action="append", metavar="ENTRY=VALUE",
+                         help="Set key event handler table entry (0x0C4CBC + entry*4). "
+                              "Value is a hex address (e.g. 1=0x02004CC8 sets OK long-press)")
+    build_p.add_argument("--remap-button", action="append", metavar="PHYSICAL=LOGICAL",
+                         help="Remap a physical button (e.g. up=down makes UP act as DOWN). "
+                              "Buttons: ok, right, left, up, down, power")
+    build_p.add_argument("--raw-patch", action="append", metavar="OFFSET=HEXBYTES",
+                         help="Write raw hex bytes at flash offset (e.g. 0x085010=80020000E0010000). "
+                              "Use for data table experiments.")
+    build_p.add_argument("--move-icons", metavar="LAYOUT",
+                         help="Set menu icon positions. Format: x,y;x,y;... for 6 positions. "
+                              "Presets: 'column' (vertical stack), 'diagonal', 'stock' (reset)")
 
     list_p = sub.add_parser("list", help="List all asset slots")
 

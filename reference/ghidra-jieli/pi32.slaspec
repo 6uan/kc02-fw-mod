@@ -1,0 +1,534 @@
+define endian    = little;
+define alignment = 2;
+
+define space ram      type=ram_space      size=4 default;
+define space register type=register_space size=4;
+
+#############################################################################
+#
+# General purpose registers
+#
+define register offset=0x0 size=4
+	[ r0 r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 r11 r12 r13 r14 sp ];
+
+#
+# Special function registers
+#
+define register offset=0x100 size=4
+	[ reti rete sfr2 sfr3 maccl macch rets psr
+	  sfr8 sfr9 ie1  ssp  ie0   icfg  pc   usp ];
+
+# Multiply accumulator (maccl + macch)
+define register offset=0x110 size=8
+	[ macc ];
+
+#############################################################################
+#
+# Instruction tokens
+#
+
+# Base word
+define token instr(16)
+	group = (13,15)
+
+	#
+	# instruction type fields
+	#
+	ins0012 = (0,12)
+	ins0212 = (2,12)
+	ins0412 = (4,12)
+	ins0512 = (5,12)
+	ins0612 = (6,12)
+	ins0712 = (7,12)
+	ins0812 = (8,12)
+	ins0912 = (9,12)
+	ins1012 = (10,12)
+	ins1112 = (11,12)
+	ins1212 = (12,12)
+
+	ins0811 = (8,11)
+
+	ins0407 = (4,7)
+	ins0607 = (6,7)
+
+	ins0305 = (3,5)
+
+	ins0003 = (0,3)
+	ins0303 = (3,3)
+
+	#
+	# immediate fields
+	#
+	imm0001  = (0,1)
+
+	imm0003s = (0,3) signed
+
+	imm0004  = (0,4)
+	imm0004s = (0,4) signed
+
+	imm0005  = (0,5)
+
+	imm0007  = (0,7)
+	imm0007s = (0,7) signed
+	imm0307  = (3,7)
+
+	imm0609s = (6,9) signed
+
+	imm0310s = (3,10) signed
+
+	imm0812  = (8,12)
+
+	#
+	# register fields
+	#
+	regA   = (0,3)
+
+	regAl  = (0,2)
+	regAh  = (0,2)
+	regBl  = (3,5)
+	regBh  = (3,5)
+	sregAl = (0,2)
+	sregAh = (0,2)
+	sregBl = (3,5)
+	sregBh = (3,5)
+	regAs  = (6,6)
+	regBs  = (7,7)
+
+	regCl  = (6,8)
+	regDl  = (8,10)
+
+	#
+	# address fields
+	#
+	addr0007  = (0,7)
+	addr0007s = (0,7) signed
+	addr0407s = (4,7) signed
+
+	addr0010s = (0,10) signed
+	addr0410s = (4,10) signed
+
+	addr0305s = (3,5) signed
+
+	addr0608s = (6,8) signed
+
+	addr0609s = (6,9) signed
+
+	addr0610  = (6,10)
+	addr0610s = (6,10) signed
+	addr0910  = (9,10)
+	addr1010  = (10,10)
+
+	#
+	# branch block
+	#
+	bra0001 = (0,1)
+	bra0203 = (2,3)
+	bra0305 = (3,5)
+	bra0507 = (5,7)
+;
+
+# Used by the group=7 instructions
+define token instr2(16)
+	#
+	# instruction fields
+	#
+	ins1619 = (0,3)
+	ins2431 = (8,15)
+	ins3131 = (15,15)
+
+	#
+	# immediate fields
+	#
+	imm1631  = (0,15)
+	imm1631s = (0,15) signed
+	imm2431  = (8,15)
+	imm2931  = (13,15)
+
+	imm2430  = (8,14)
+
+	imm2428  = (8,12)
+
+	#
+	# address fields
+	#
+	addr1619  = (0,3)
+
+	addr1619s = (0,3) signed
+	addr2031  = (4,15)
+
+	addr2429s = (8,13) signed
+	addr3031  = (14,15)
+
+	addr2430s = (8,14) signed
+	addr3131  = (15,15)
+
+	addr2431s = (8,15) signed
+
+	addr2023s = (4,7) signed
+	addr2431  = (8,15)
+
+	addr2022s = (4,6) signed
+	addr2331  = (7,15)
+
+	addr2021s = (4,5) signed
+	addr2231  = (6,15)
+
+	#
+	# register fields
+	#
+	regE = (0,3)
+	regF = (4,7)
+	regG = (8,11)
+;
+
+#############################################################################
+#
+# Variables
+#
+
+attach variables [ regA regE regF regG ]
+	[ r0 r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 r11 r12 r13 r14 sp ];
+
+attach variables [ regAl regBl regCl regDl ]
+	[ r0 r1 r2 r3 r4 r5 r6 r7 ];
+
+attach variables [ regAh regBh ]
+	[ r8 r9 r10 r11 r12 r13 r14 sp ];
+
+attach variables [ sregAl sregBl ]
+	[ reti rete sfr2 sfr3 maccl macch rets psr ];
+
+attach variables [ sregAh sregBh ]
+	[ sfr8 sfr9 ie1 ssp ie0 icfg pc usp ];
+
+# PSR bits
+@define V	"psr[0,1]"	# overflow
+@define C	"psr[1,1]"	# carry
+@define Z	"psr[2,1]"	# zero
+@define N	"psr[3,1]"	# negative
+
+#############################################################################
+#
+# Stuff
+#
+
+#
+# 7-bit address immediate (pc-relative)
+#
+jaddr7: res is addr0410s
+	[ res = (addr0410s << 1) + inst_next; ]
+	{ export *:4 res; }
+
+#
+# 8-bit address immediate (pc-relative)
+#
+jaddr8: res is addr0007s
+	[ res = (addr0007s << 1) + inst_next; ]
+	{ export *:4 res; }
+
+#
+# 11-bit address immediate (pc-relative)
+#
+jaddr11: res is addr0010s
+	[ res = (addr0010s << 1) + inst_next; ]
+	{ export *:4 res; }
+
+#
+# 20-bit address immediate (pc-relative)
+#
+jaddr20: res is addr0007s ; addr2031
+	[ res = ((addr0007s << 13) | (addr2031 << 1)) + inst_next; ]
+	{ export *:4 res; }
+
+
+#
+# 24-bit address immediate (pc-relative)
+#
+jaddr24: res is addr0007 ; addr1619s & addr2031
+	[ res = ((addr1619s << 21) | (addr0007 << 13) | (addr2031 << 1)) + inst_next; ]
+	{ export *:4 res; }
+
+#
+# Register constants
+#
+regAf: regAl is regAs=0 & regAl { export regAl; }
+regAf: regAh is regAs=1 & regAh { export regAh; }
+regBf: regBl is regBs=0 & regBl { export regBl; }
+regBf: regBh is regBs=1 & regBh { export regBh; }
+
+sregAf: sregAl is regAs=0 & sregAl { export sregAl; }
+sregAf: sregAh is regAs=1 & sregAh { export sregAh; }
+sregBf: sregBl is regBs=0 & sregBl { export sregBl; }
+sregBf: sregBh is regBs=1 & sregBh { export sregBh; }
+
+#
+# special immediate in bits 24-31, selected by bits 0-3
+#
+weirdimm: res is ins0003=0x0 ; imm2431 [ res = imm2431 * 0x00000001; ] { local tmp:4 = res; export tmp; }
+weirdimm: res is ins0003=0x1 ; imm2431 [ res = imm2431 * 0x00010001; ] { local tmp:4 = res; export tmp; }
+weirdimm: res is ins0003=0x2 ; imm2431 [ res = imm2431 * 0x01000100; ] { local tmp:4 = res; export tmp; }
+weirdimm: res is ins0003=0x3 ; imm2431 [ res = imm2431 * 0x01010101; ] { local tmp:4 = res; export tmp; }
+
+weirdimm: res is ins0003=0x4 ; imm2430 & ins3131=0 [ res = (0x80 | imm2430) << 24; ] { local tmp:4 = res; export tmp; }
+weirdimm: res is ins0003=0x4 ; imm2430 & ins3131=1 [ res = (0x80 | imm2430) << 23; ] { local tmp:4 = res; export tmp; }
+weirdimm: res is ins0003=0x5 ; imm2430 & ins3131=0 [ res = (0x80 | imm2430) << 22; ] { local tmp:4 = res; export tmp; }
+weirdimm: res is ins0003=0x5 ; imm2430 & ins3131=1 [ res = (0x80 | imm2430) << 21; ] { local tmp:4 = res; export tmp; }
+weirdimm: res is ins0003=0x6 ; imm2430 & ins3131=0 [ res = (0x80 | imm2430) << 20; ] { local tmp:4 = res; export tmp; }
+weirdimm: res is ins0003=0x6 ; imm2430 & ins3131=1 [ res = (0x80 | imm2430) << 19; ] { local tmp:4 = res; export tmp; }
+weirdimm: res is ins0003=0x7 ; imm2430 & ins3131=0 [ res = (0x80 | imm2430) << 18; ] { local tmp:4 = res; export tmp; }
+weirdimm: res is ins0003=0x7 ; imm2430 & ins3131=1 [ res = (0x80 | imm2430) << 17; ] { local tmp:4 = res; export tmp; }
+weirdimm: res is ins0003=0x8 ; imm2430 & ins3131=0 [ res = (0x80 | imm2430) << 16; ] { local tmp:4 = res; export tmp; }
+weirdimm: res is ins0003=0x8 ; imm2430 & ins3131=1 [ res = (0x80 | imm2430) << 15; ] { local tmp:4 = res; export tmp; }
+weirdimm: res is ins0003=0x9 ; imm2430 & ins3131=0 [ res = (0x80 | imm2430) << 14; ] { local tmp:4 = res; export tmp; }
+weirdimm: res is ins0003=0x9 ; imm2430 & ins3131=1 [ res = (0x80 | imm2430) << 13; ] { local tmp:4 = res; export tmp; }
+weirdimm: res is ins0003=0xA ; imm2430 & ins3131=0 [ res = (0x80 | imm2430) << 12; ] { local tmp:4 = res; export tmp; }
+weirdimm: res is ins0003=0xA ; imm2430 & ins3131=1 [ res = (0x80 | imm2430) << 11; ] { local tmp:4 = res; export tmp; }
+weirdimm: res is ins0003=0xB ; imm2430 & ins3131=0 [ res = (0x80 | imm2430) << 10; ] { local tmp:4 = res; export tmp; }
+weirdimm: res is ins0003=0xB ; imm2430 & ins3131=1 [ res = (0x80 | imm2430) <<  9; ] { local tmp:4 = res; export tmp; }
+weirdimm: res is ins0003=0xC ; imm2430 & ins3131=0 [ res = (0x80 | imm2430) <<  8; ] { local tmp:4 = res; export tmp; }
+weirdimm: res is ins0003=0xC ; imm2430 & ins3131=1 [ res = (0x80 | imm2430) <<  7; ] { local tmp:4 = res; export tmp; }
+weirdimm: res is ins0003=0xD ; imm2430 & ins3131=0 [ res = (0x80 | imm2430) <<  6; ] { local tmp:4 = res; export tmp; }
+weirdimm: res is ins0003=0xD ; imm2430 & ins3131=1 [ res = (0x80 | imm2430) <<  5; ] { local tmp:4 = res; export tmp; }
+weirdimm: res is ins0003=0xE ; imm2430 & ins3131=0 [ res = (0x80 | imm2430) <<  4; ] { local tmp:4 = res; export tmp; }
+weirdimm: res is ins0003=0xE ; imm2430 & ins3131=1 [ res = (0x80 | imm2430) <<  3; ] { local tmp:4 = res; export tmp; }
+weirdimm: res is ins0003=0xF ; imm2430 & ins3131=0 [ res = (0x80 | imm2430) <<  2; ] { local tmp:4 = res; export tmp; }
+weirdimm: res is ins0003=0xF ; imm2430 & ins3131=1 [ res = (0x80 | imm2430) <<  1; ] { local tmp:4 = res; export tmp; }
+
+#############################################################################
+#
+# Instructions
+#
+
+define pcodeop nop;
+define pcodeop Breakpoint;
+define pcodeop HBreakpoint;
+define pcodeop CoreSynchronize;
+define pcodeop SystemSynchronize;
+define pcodeop Illegal;
+define pcodeop SetLock;
+define pcodeop ClearLock;
+define pcodeop Idle;
+define pcodeop DisableInterrupts;
+define pcodeop EnableInterrupts;
+define pcodeop SoftwareInterrupt;
+define pcodeop SoftwareException;
+define pcodeop DataCacheFlush;
+define pcodeop DataCacheLineInvalidate;
+define pcodeop InstructionCacheFlush;
+define pcodeop DataCachePrefetch;
+define pcodeop Trigger;
+
+define pcodeop IfElseBlock;
+define pcodeop RepeatBlock;
+
+define pcodeop TODO;
+
+# Categorized
+@include "pi32_ins_loadstore.sinc"
+@include "pi32_ins_stack.sinc"
+@include "pi32_ins_shiftrot.sinc"
+@include "pi32_ins_move.sinc"
+@include "pi32_ins_loadimm.sinc"
+@include "pi32_ins_logicops.sinc"
+@include "pi32_ins_arithops.sinc"
+@include "pi32_ins_bitops.sinc"
+@include "pi32_ins_progflow.sinc"
+@include "pi32_ins_compare.sinc"
+@include "pi32_ins_regfield.sinc"
+
+##########################################################################################
+# Uncategorized #
+#################
+
+#
+# nop
+#
+:nop is group=0 & ins0012=0x0000
+{
+	nop();
+}
+
+#
+# bkpt
+#
+:bkpt is group=0 & ins0012=0x0002
+{
+	Breakpoint();
+}
+
+#
+# hbkpt
+#
+:hbkpt is group=0 & ins0012=0x0003
+{
+	HBreakpoint();
+}
+
+#
+# macc = 0
+# clrmacc
+#
+:clrmacc is group=0 & ins0012=0x0004
+{
+	macc = 0;
+}
+
+#
+# csync
+#
+:csync is group=0 & ins0012=0x0008
+{
+	CoreSynchronize();
+}
+
+#
+# ssync
+#
+:ssync is group=0 & ins0012=0x0009
+{
+	SystemSynchronize();
+}
+
+#
+# illeg
+#
+:illeg is group=0 & ins0012=0x000A
+{
+	Illegal();
+}
+
+#
+# lockset
+#
+:lockset is group=0 & ins0012=0x000C
+{
+	SetLock();
+}
+
+#
+# lockclr
+#
+:lockclr is group=0 & ins0012=0x000D
+{
+	ClearLock();
+}
+
+#
+# idle
+#
+:idle is group=0 & ins0012=0x0010
+{
+	Idle();
+}
+
+#
+# cli
+#
+:cli is group=0 & ins0012=0x0040
+{
+	DisableInterrupts();
+}
+
+#
+# cli rA
+#
+:cli regA is group=0 & ins0412=0x005 & regA
+{
+	DisableInterrupts(regA:4);
+}
+
+#
+# sti
+#
+:sti is group=0 & ins0012=0x0060
+{
+	EnableInterrupts();
+}
+
+#
+# sti rA
+#
+:sti regA is group=0 & ins0412=0x007 & regA
+{
+	EnableInterrupts(regA:4);
+}
+
+#
+# swi n
+#
+:swi imm0005 is group=0 & ins0612=0x02 & imm0005
+{
+	SoftwareInterrupt(imm0005:1);
+}
+
+#
+# excpt n
+#
+:excpt imm0005 is group=0 & ins0612=0x03 & imm0005
+{
+	SoftwareException(imm0005:1);
+}
+
+#
+# flush [rA]
+# flush rA
+#
+:flush regAf is group=0 & ins0712=0x03 & ins0305=0 & regAf
+{
+	DataCacheFlush(regAf:4);
+}
+
+#
+# flushinv [rA]
+# flushinv rA
+#
+:flushinv regAf is group=0 & ins0712=0x03 & ins0305=1 & regAf
+{
+	DataCacheLineInvalidate(regAf:4);
+}
+
+#
+# iflush [rA]
+# iflush rA
+#
+:iflush regAf is group=0 & ins0712=0x03 & ins0305=2 & regAf
+{
+	InstructionCacheFlush(regAf:4);
+}
+
+#
+# pfetch [rA]
+# pfetch rA
+#
+:pfetch regAf is group=0 & ins0712=0x03 & ins0305=3 & regAf
+{
+	DataCachePrefetch(regAf:4);
+}
+
+##########################################################################################
+
+#
+# testset b[rA]
+#
+:testset "b"[regA] is group=6 & ins0812=0x03 & regA
+{
+	TODO(regA:4);
+}
+
+#
+# cmn rB, rA
+#
+:cmn regBf, regAf is group=6 & ins0812=0x0C & regAf & regBf
+{
+	TODO(regAf:4, regBf:4);
+}
+
+##########################################################################################
+
+#
+# trigger
+#
+:trigger is group=7 & ins0012=0x0080
+{
+	Trigger();
+}

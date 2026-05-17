@@ -1,0 +1,214 @@
+##################
+#
+# Load/Store
+#
+##################
+
+
+###########################################################################################
+# Load Word
+###########################################################################################
+
+#
+# rA = [rB ++= 4]
+# => lw rA, [rB ++= 4]
+#
+:lw regAl, [regBl ++= 4] is group=0 & ins0712=0x0A & ins0303=0 & regAl & regBl
+{
+	regAl = *:4 regBl;
+	regBl = regBl + 4;
+}
+
+#
+# rA = [rB ++= -4]
+# => lw rA, [rB --= 4]
+#
+:lw regAl, [regBl --= 4] is group=0 & ins0712=0x0A & ins0303=1 & regAl & regBl
+{
+	regAl = *:4 regBl;
+	regBl = regBl - 4;
+}
+
+#
+# rA = [rB+simm7m4]
+# => lw rA, [rB + simm7m4]
+#
+:lw regAl, [regBl + simm7m4] is group=3 & ins0707=0 & ins0303=0 & regAl & regBl & imm0812s
+[ simm7m4 = (imm0812s << 2); ]
+{
+	local addr:4 = regBl + simm7m4;
+	regAl = *:4 addr;
+}
+
+###########################################################################################
+# Load Halfword (zero extend)
+###########################################################################################
+
+#
+# rA = h[rB ++= 2] (u)
+# => lh.z rA, [rB ++= 2]
+#
+:lh.z regAl, [regBl ++= 2] is group=0 & ins0712=0x0C & ins0303=0 & regAl & regBl
+{
+	regAl = zext(*:2 regBl);
+	regBl = regBl + 2;
+}
+
+#
+# rA = h[rB ++= -2] (u)
+# => lh.z rA, [rB --= 2]
+#
+:lh.z regAl, [regBl --= 2] is group=0 & ins0712=0x0C & ins0303=1 & regAl & regBl
+{
+	regAl = zext(*:2 regBl);
+	regBl = regBl - 2;
+}
+
+#
+# rA = h[rB+simm6m2] (u)
+# => lh.z rA, [rB + simm6m2]
+#
+:lh.z regAl, [regBl + simm6m2] is group=3 & ins0707=0 & ins0303=1 & regAl & regBl & imm0812s
+[ simm6m2 = (imm0812s << 1); ]
+{
+	local addr:4 = regBl + simm6m2;
+	regAl = zext(*:2 addr);
+}
+
+###########################################################################################
+# Load Byte (zero extend)
+###########################################################################################
+
+#
+# rA = b[rB ++= 1] (u)
+# => lb.z rA, [rB ++= 1]
+#
+:lb.z regAl, [regBl ++= 2] is group=0 & ins0712=0x0E & ins0303=0 & regAl & regBl
+{
+	regAl = zext(*:1 regBl);
+	regBl = regBl + 1;
+}
+
+#
+# rA = b[rB ++= -1] (u)
+# => lb.z rA, [rB --= 1]
+#
+:lb.z regAl, [regBl --= 1] is group=0 & ins0712=0x0E & ins0303=1 & regAl & regBl
+{
+	regAl = zext(*:1 regBl);
+	regBl = regBl - 1;
+}
+
+#
+# rA = b[rB+simm5] (u)
+# => lb.z rA, [rB + simm5]
+#
+:lb.z regAl, [regBl + imm0812s] is group=2 & ins0707=0 & ins0303=1 & regAl & regBl & imm0812s
+{
+	local addr:4 = regBl + imm0812s;
+	regAl = zext(*:1 addr);
+}
+
+###########################################################################################
+# Store Word
+###########################################################################################
+
+#
+# [rB ++= 4] = rA
+# => sw rA, [rB ++= 4]
+#
+:sw regAl, [regBl ++= 4] is group=0 & ins0712=0x0B & ins0303=0 & regAl & regBl
+{
+	*:4 regBl = regAl;
+	regBl = regBl + 4;
+}
+
+#
+# [rB ++= -4] = rA
+# => sw rA, [rB --= 4]
+#
+:sw regAl, [regBl --= 4] is group=0 & ins0712=0x0B & ins0303=1 & regAl & regBl
+{
+	*:4 regBl = regAl;
+	regBl = regBl - 4;
+}
+
+#
+# [rB+simm7m4] = rA
+# => sw rA, [rB + simm7m4]
+#
+:sw regAl, [regBl + simm7m4] is group=3 & ins0707=1 & ins0303=0 & regAl & regBl & imm0812s
+[ simm7m4 = (imm0812s << 2); ]
+{
+	local addr:4 = regBl + simm7m4;
+	*:4 addr = regAl:4;
+}
+
+###########################################################################################
+# Store halfword
+###########################################################################################
+
+#
+# h[rB ++= 2] = rA
+# => sh rA, [rB ++= 2]
+#
+:sh regAl, [regBl ++= 2] is group=0 & ins0712=0x0D & ins0303=0 & regAl & regBl
+{
+	*:2 regBl = regAl:2;
+	regBl = regBl + 2;
+}
+
+#
+# h[rB ++= -2] = rA
+# => sh rA, [rB --= 2]
+#
+:sh regAl, [regBl --= 2] is group=0 & ins0712=0x0D & ins0303=1 & regAl & regBl
+{
+	*:2 regBl = regAl:2;
+	regBl = regBl - 2;
+}
+
+#
+# h[rB+simm6m2] = rA
+# => sh rA, [rB + simm6m2]
+#
+:sh regAl, [regBl + simm6m2] is group=3 & ins0707=1 & ins0303=1 & regAl & regBl & imm0812s
+[ simm6m2 = (imm0812s << 1); ]
+{
+	local addr:4 = regBl + simm6m2;
+	*:2 addr = regAl:2;
+}
+
+###########################################################################################
+# Store Byte
+###########################################################################################
+
+#
+# b[rB ++= 1] = rA
+# => sb rA, [rB ++= 1]
+#
+:sb regAl, [regBl ++= 1] is group=0 & ins0712=0x0F & ins0303=0 & regAl & regBl
+{
+	*:1 regBl = regAl:1;
+	regBl = regBl + 1;
+}
+
+#
+# b[rB ++= -1] = rA
+# => sb rA, [rB -= 1]
+#
+:sb regAl, [regBl --= 1] is group=0 & ins0712=0x0F & ins0303=1 & regAl & regBl
+{
+	*:1 regBl = regAl:1;
+	regBl = regBl - 1;
+}
+
+#
+# b[rB+simm5] = rA
+# => sb rA, [rB + simm5]
+#
+:sb regAl, [regBl + imm0812s] is group=2 & ins0707=1 & ins0303=1 & regAl & regBl & imm0812s
+{
+	local addr:4 = regBl + imm0812s;
+	*:1 addr = regAl:1;
+}

@@ -23,7 +23,7 @@ TOOLS_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(TOOLS_DIR))
 from build import SLOTS, ALIASES, PROJECT, MENU_LAYOUT_REF, MENU_ICON_NAMES, \
     MENU_BG_EFFECTS, load_menu_bg_offsets, load_menu_bg_effect, \
-    save_menu_bg_offsets, generate_menu_bg
+    save_menu_bg_offsets, generate_menu_bg, find_menu_bg_base
 
 MIME = {"bmp": "image/bmp", "jpg": "image/jpeg", "jpeg": "image/jpeg"}
 
@@ -204,7 +204,26 @@ def build_manifest(theme_name):
             elif stem in slot_names:
                 theme_by_slot[stem] = f
 
-    entries = []
+    base_entry = {
+        "slot": "menu_bg_base",
+        "index": -1,
+        "offset": "",
+        "format": "png",
+        "size": 0,
+        "category": "menu_bg",
+        "tags": ["menu"],
+        "original": None,
+        "theme": None,
+    }
+    base_path = find_menu_bg_base(theme_dir)
+    if base_path:
+        base_entry["theme"] = {
+            "url": f"/theme/{base_path.name}",
+            "filename": base_path.name,
+            "filesize": base_path.stat().st_size,
+        }
+
+    entries = [base_entry]
     for idx, offset, size, fmt, name, tags in SLOTS:
         cat = categorize(tags)
         entry = {
@@ -282,16 +301,16 @@ def refresh_manifest():
 def find_theme_file(slot_name):
     """Find the theme file path for a given slot name."""
     theme_dir = PROJECT / "themes" / CURRENT_THEME / "firmware_exports"
+    for ext in ["bmp", "jpg"]:
+        p = theme_dir / f"{slot_name}.{ext}"
+        if p.exists():
+            return p
     for alias, sname in ALIASES.items():
         if sname == slot_name:
             for ext in ["bmp", "jpg"]:
                 p = theme_dir / f"{alias}.{ext}"
                 if p.exists():
                     return p
-    for ext in ["bmp", "jpg"]:
-        p = theme_dir / f"{slot_name}.{ext}"
-        if p.exists():
-            return p
     return None
 
 
@@ -367,8 +386,15 @@ def reposition_bmp(filepath, dx, dy, slot):
     if len(data) < 54 or data[:2] != b'BM':
         return False, "Not a valid BMP"
 
+    pixel_offset = struct.unpack_from('<I', data, 10)[0]
     width = struct.unpack_from('<i', data, 18)[0]
-    height = abs(struct.unpack_from('<i', data, 22)[0])
+    height_raw = struct.unpack_from('<i', data, 22)[0]
+    height = abs(height_raw)
+    bpp = struct.unpack_from('<H', data, 28)[0]
+
+    if bpp != 24:
+        return False, f"Expected 24bpp BMP, got {bpp}bpp — run Fix BMP first"
+
     stride = ((width * 3 + 3) // 4) * 4
 
     chroma_rgb = (140, 140, 140)
@@ -378,12 +404,17 @@ def reposition_bmp(filepath, dx, dy, slot):
             break
     cb, cg, cr = chroma_rgb[2], chroma_rgb[1], chroma_rgb[0]
 
-    orig = bytes(data[54:54 + height * stride])
+    orig = bytes(data[pixel_offset:pixel_offset + height * stride])
+
+    # bottom-up (height > 0): +dy in file rows = down on screen
+    # top-down (height < 0): -dy in file rows = down on screen
+    flip = 1 if height_raw > 0 else -1
 
     for y in range(height):
         for x in range(width):
-            dest_off = 54 + y * stride + x * 3
-            sx, sy = x - dx, y + dy
+            dest_off = pixel_offset + y * stride + x * 3
+            sx = x - dx
+            sy = y + dy * flip
             if 0 <= sx < width and 0 <= sy < height:
                 src_off = sy * stride + sx * 3
                 data[dest_off] = orig[src_off]
@@ -489,9 +520,9 @@ h1{font-size:1.4rem;font-weight:600;color:#fff}
 .cat-title{font-size:1rem;color:#999;border-bottom:1px solid #222;padding-bottom:6px;margin-bottom:12px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
 .card{background:#1a1a1a;border:1px solid #262626;border-radius:6px;overflow:hidden}
-.card-head{padding:8px 12px;background:#151515;border-bottom:1px solid #222;display:flex;justify-content:space-between;align-items:center;gap:8px}
-.slot-name{color:#eee;font-weight:600;font-size:.85rem}
-.card-right{display:flex;align-items:center;gap:6px}
+.card-head{padding:8px 12px;background:#151515;border-bottom:1px solid #222;display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
+.slot-name{color:#eee;font-weight:600;font-size:.85rem;white-space:nowrap}
+.card-right{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
 .slot-meta{color:#555;font-size:.75rem;font-family:monospace}
 .btn-edit,.btn-fix{
   padding:3px 8px;border-radius:3px;border:1px solid #333;
@@ -499,8 +530,14 @@ h1{font-size:1.4rem;font-weight:600;color:#fff}
 }
 .btn-edit:hover{border-color:#4a9;color:#4a9}
 .btn-fix:hover{border-color:#e90;color:#e90}
-.btn-edit:disabled,.btn-fix:disabled{opacity:.3;cursor:default}
+.btn-edit:disabled,.btn-fix:disabled,.btn-remove:disabled{opacity:.3;cursor:default}
 .btn-edit.loading,.btn-fix.loading{opacity:.5;pointer-events:none}
+.btn-remove{
+  padding:3px 8px;border-radius:3px;border:1px solid #333;
+  font-size:.7rem;cursor:pointer;transition:all .15s;background:#222;color:#999;
+}
+.btn-remove:hover{border-color:#e55;color:#e55}
+.btn-remove.confirming{background:#6a1a1a;border-color:#e55;color:#fff;animation:pulse 1s infinite}
 .comparison{display:grid;grid-template-columns:1fr auto 1fr;align-items:center}
 .side{padding:10px;text-align:center}
 .side-label{font-size:.7rem;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
@@ -684,6 +721,29 @@ function renderCard(e,cat){
   const sc=scaleClass(cat);
   const isBmp=e.format==='bmp';
   const hasTheme=!!e.theme;
+  const t=Date.now();
+
+  if(e.index<0){
+    const editBtn=hasTheme?`<button class="btn-edit" onclick="openEdit('${e.slot}',this)">Edit</button>`:'';
+    const removeBtn=hasTheme?`<button class="btn-remove" onclick="removeAsset('${e.slot}',this)">Remove</button>`:'';
+    const inner=hasTheme
+      ? `<div class="img-wrap"><img id="img-${e.slot}" src="${e.theme.url}?t=${t}" class="${sc}" loading="lazy"></div>
+         <div class="file-info" id="info-${e.slot}">${e.theme.filename}<br>${fmtSize(e.theme.filesize)}</div>`
+      : '<div class="placeholder">Drop image to set background</div>';
+    return `<div class="card" id="card-${e.slot}">
+      <div class="card-head">
+        <span class="slot-name">${e.slot.replace(/_/g,' ')}</span>
+        <div class="card-right"><span class="slot-meta">source</span>${editBtn}${removeBtn}</div>
+      </div>
+      <div class="comparison">
+        <div class="side drop-target" data-slot="${e.slot}" style="flex:1"
+             ondragover="event.preventDefault();this.classList.add('dragover')"
+             ondragleave="this.classList.remove('dragover')"
+             ondrop="handleDrop(event,'${e.slot}')">
+          ${inner}</div>
+      </div></div>`;
+  }
+
   const editBtn=isBmp&&hasTheme
     ? `<button class="btn-edit" onclick="openEdit('${e.slot}',this)">Edit</button>`
     : '';
@@ -693,6 +753,9 @@ function renderCard(e,cat){
   const moveBtn=isBmp&&hasTheme
     ? `<button class="btn-edit" onclick="openMove('${e.slot}')">Move</button>`
     : '';
+  const removeBtn=hasTheme
+    ? `<button class="btn-remove" onclick="removeAsset('${e.slot}',this)">Remove</button>`
+    : '';
   const layerBtn=e.slot==='menu_bg'
     ? `<button class="btn-edit" onclick="openMenuBgEditor()">Edit Layers</button>`
     : '';
@@ -700,7 +763,6 @@ function renderCard(e,cat){
     ? `<div class="img-wrap"><img src="${e.original.url}" class="${sc}" loading="lazy"></div>
        <div class="file-info">${e.original.filename}<br>${fmtSize(e.original.filesize)}</div>`
     : '<div class="placeholder">No original</div>';
-  const t=Date.now();
   const theme=e.theme
     ? `<div class="img-wrap"><img id="img-${e.slot}" src="${e.theme.url}?t=${t}" class="${sc}" loading="lazy"></div>
        <div class="file-info" id="info-${e.slot}">${e.theme.filename}<br>${fmtSize(e.theme.filesize)}</div>`
@@ -710,7 +772,7 @@ function renderCard(e,cat){
       <span class="slot-name">${e.slot.replace(/_/g,' ')}</span>
       <div class="card-right">
         <span class="slot-meta">#${e.index} ${e.format}</span>
-        ${editBtn}${fixBtn}${moveBtn}${layerBtn}
+        ${editBtn}${fixBtn}${moveBtn}${layerBtn}${removeBtn}
       </div>
     </div>
     <div class="comparison">
@@ -806,12 +868,45 @@ function uploadAsset(file,slot){
     if(d.ok){
       toast(d.message,true);
       reloadCard(slot);
+      if(slot==='menu_bg_base')reloadCard('menu_bg');
     } else {
       toast(d.error,false);
     }
   }).catch(()=>{
     if(card)card.style.opacity='1';
     toast('Upload failed',false);
+  });
+}
+
+function removeAsset(slot,btn){
+  if(!btn.dataset.confirming){
+    btn.dataset.confirming='1';
+    btn.textContent='Confirm?';
+    btn.classList.add('confirming');
+    btn._timeout=setTimeout(()=>{
+      delete btn.dataset.confirming;
+      btn.textContent='Remove';
+      btn.classList.remove('confirming');
+    },3000);
+    return;
+  }
+  clearTimeout(btn._timeout);
+  btn.disabled=true;
+  btn.textContent='Removing...';
+  fetch('/api/remove/'+slot,{method:'POST'}).then(r=>r.json()).then(d=>{
+    if(d.ok){
+      toast('Removed '+slot.replace(/_/g,' '),true);
+      reloadCard(slot);
+      if(slot==='menu_bg_base')reloadCard('menu_bg');
+    }else{
+      toast(d.error,false);
+      btn.disabled=false;btn.textContent='Remove';
+      btn.classList.remove('confirming');delete btn.dataset.confirming;
+    }
+  }).catch(()=>{
+    toast('Remove failed',false);
+    btn.disabled=false;btn.textContent='Remove';
+    btn.classList.remove('confirming');delete btn.dataset.confirming;
   });
 }
 
@@ -1001,7 +1096,9 @@ function openMenuBgEditor(){
       img.src=entry.theme.url+'?t='+Date.now();
     });
     function initMbg(){
-      mbg={icons,offsets:{},selected:-1,dragging:false,lastX:0,lastY:0,SCALE:S,COORDS,NAMES,effect:curEffect};
+      mbg={icons,offsets:{},selected:-1,dragging:false,lastX:0,lastY:0,SCALE:S,COORDS,NAMES,effect:curEffect,baseImg:null};
+      const baseEntry=DATA.entries.find(e=>e.slot==='menu_bg_base');
+      if(baseEntry&&baseEntry.theme){const bi=new Image();bi.onload=()=>{mbg.baseImg=bi;redrawMbg();};bi.src=baseEntry.theme.url+'?t='+Date.now();}
       NAMES.forEach(n=>{mbg.offsets[n]={dx:(offsets[n]&&offsets[n].dx)||0,dy:(offsets[n]&&offsets[n].dy)||0};});
       const effectLabels={none:'None',desaturate:'Desaturate',warm_tint:'Warm Tint',cool_tint:'Cool Tint'};
       modal.innerHTML=`<div class="modal">
@@ -1080,6 +1177,7 @@ function redrawMbg(){
   const ctx=c.getContext('2d');
   ctx.filter='none';
   ctx.fillStyle='#000';ctx.fillRect(0,0,c.width,c.height);
+  if(mbg.baseImg)ctx.drawImage(mbg.baseImg,0,0,c.width,c.height);
   ctx.imageSmoothingEnabled=false;
   NAMES.forEach((name,i)=>{
     if(!icons[i])return;
@@ -1223,6 +1321,9 @@ class Handler(BaseHTTPRequestHandler):
         elif path.startswith("/api/convert/"):
             slot = path[len("/api/convert/"):]
             self.handle_convert(slot)
+        elif path.startswith("/api/remove/"):
+            slot = path[len("/api/remove/"):]
+            self.handle_remove(slot)
         elif path.startswith("/api/reposition/"):
             slot = path[len("/api/reposition/"):]
             self.handle_reposition(slot)
@@ -1234,7 +1335,11 @@ class Handler(BaseHTTPRequestHandler):
             self.respond(404, "application/json", json.dumps({"ok": False, "error": "Not found"}).encode())
 
     def handle_open(self, slot):
-        filepath = find_theme_file(slot)
+        if slot == "menu_bg_base":
+            theme_dir = PROJECT / "themes" / CURRENT_THEME / "firmware_exports"
+            filepath = find_menu_bg_base(theme_dir)
+        else:
+            filepath = find_theme_file(slot)
         if not filepath:
             return self.json_resp({"ok": False, "error": f"No theme file for slot '{slot}'"})
         try:
@@ -1282,6 +1387,45 @@ class Handler(BaseHTTPRequestHandler):
         dy = body.get("dy", 0)
         ok, msg = reposition_bmp(filepath, dx, dy, info)
         self.json_resp({"ok": ok, "message": msg} if ok else {"ok": False, "error": msg})
+
+    def handle_remove(self, slot):
+        if slot == "menu_bg_base":
+            theme_dir = PROJECT / "themes" / CURRENT_THEME / "firmware_exports"
+            removed = False
+            for ext in ["png", "jpg", "jpeg", "bmp"]:
+                p = theme_dir / f"menu_bg_base.{ext}"
+                if p.exists():
+                    p.unlink()
+                    if p.name in THEME_FILES:
+                        del THEME_FILES[p.name]
+                    removed = True
+            if removed:
+                try:
+                    effect = load_menu_bg_effect(theme_dir)
+                    generate_menu_bg(theme_dir, effect=effect)
+                    THEME_FILES["07_menu_bg_320x240.jpg"] = theme_dir / "07_menu_bg_320x240.jpg"
+                except Exception:
+                    pass
+                return self.json_resp({"ok": True, "message": "Base image removed, menu BG regenerated"})
+            return self.json_resp({"ok": False, "error": "No base image to remove"})
+
+        if slot not in SLOT_BY_NAME:
+            return self.json_resp({"ok": False, "error": f"Unknown slot '{slot}'"})
+        filepath = find_theme_file(slot)
+        if not filepath:
+            return self.json_resp({"ok": False, "error": f"No theme file for '{slot}'"})
+        try:
+            name = filepath.name
+            subprocess.run(
+                ["osascript", "-e",
+                 f'tell app "Finder" to move POSIX file "{filepath.resolve()}" to trash'],
+                capture_output=True, timeout=5,
+            )
+            if name in THEME_FILES:
+                del THEME_FILES[name]
+            self.json_resp({"ok": True, "message": f"Removed {name}"})
+        except Exception as e:
+            self.json_resp({"ok": False, "error": str(e)})
 
     def handle_menu_bg_save(self):
         length = int(self.headers.get("Content-Length", 0))
@@ -1358,6 +1502,29 @@ class Handler(BaseHTTPRequestHandler):
         tmp = Path(tempfile.mktemp(suffix=file_ext))
         try:
             tmp.write_bytes(file_data)
+
+            if slot == "menu_bg_base":
+                try:
+                    from PIL import Image as PILImage
+                    theme_dir = PROJECT / "themes" / CURRENT_THEME / "firmware_exports"
+                    theme_dir.mkdir(parents=True, exist_ok=True)
+                    for ext in ["png", "jpg", "jpeg", "bmp"]:
+                        old = theme_dir / f"menu_bg_base.{ext}"
+                        if old.exists():
+                            old.unlink()
+                    img = PILImage.open(str(tmp)).convert("RGBA").resize((320, 240), PILImage.LANCZOS)
+                    out_path = theme_dir / "menu_bg_base.png"
+                    img.save(str(out_path), "PNG")
+                    THEME_FILES["menu_bg_base.png"] = out_path
+                    effect = load_menu_bg_effect(theme_dir)
+                    generate_menu_bg(theme_dir, effect=effect)
+                    THEME_FILES["07_menu_bg_320x240.jpg"] = theme_dir / "07_menu_bg_320x240.jpg"
+                    self.json_resp({"ok": True, "message": "Base image set, menu BG regenerated",
+                                    "preview_url": "/theme/menu_bg_base.png"})
+                except Exception as e:
+                    self.json_resp({"ok": False, "error": str(e)})
+                return
+
             ok, msg, out_path = convert_asset(str(tmp), slot)
             if ok:
                 resp = {"ok": True, "message": msg}
