@@ -33,10 +33,10 @@ PROJECT = Path(__file__).resolve().parent.parent
 def _find_dump():
     if "KC02_DUMP" in os.environ:
         return Path(os.environ["KC02_DUMP"])
-    for p in [PROJECT / "firmware" / "original.bin", Path.home() / "dump1.bin"]:
-        if p.exists():
-            return p
-    return PROJECT / "firmware" / "original.bin"
+    p = PROJECT / "firmware" / "original.bin"
+    if p.exists():
+        return p
+    return p
 
 DUMP = _find_dump()
 BACKUP = Path(os.environ.get("KC02_BACKUP", Path.home() / "original_firmware_backup.bin"))
@@ -467,7 +467,16 @@ def find_assets(asset_dir):
 
 def build(args):
     if not DUMP.exists():
-        print(f"ERROR: Original dump not found: {DUMP}")
+        print(f"ERROR: Original firmware dump not found: {DUMP}")
+        print(f"")
+        print(f"  This tool patches assets onto YOUR original firmware dump.")
+        print(f"  It cannot build a firmware from scratch.")
+        print(f"")
+        print(f"  To get your dump:")
+        print(f"    1. Open camera, clip SOIC8 onto flash chip (Zetta 25VQ32)")
+        print(f"    2. flashrom -p ch341a_spi -r firmware/original.bin")
+        print(f"")
+        print(f"  Or set KC02_DUMP env var to point to your dump file.")
         sys.exit(1)
 
     fw = bytearray(DUMP.read_bytes())

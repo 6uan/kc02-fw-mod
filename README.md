@@ -56,9 +56,10 @@ This camera is sold under various brand names. If your camera has the same inter
 
 ### 1. Dump your original firmware
 
-You need your own firmware dump. We don't distribute the stock firmware (it's copyrighted).
+**This is required.** The build tool patches your theme assets onto your original firmware dump — it can't generate a firmware from scratch. Without the dump, nothing else works.
 
-Open the camera, clip the SOIC8 onto the flash chip (Zetta 25VQ32), and dump with flashrom:
+We don't distribute the stock firmware (it's copyrighted). You need to dump it yourself using a CH341A SPI programmer and SOIC8 clip:
+
 
 ```bash
 # macOS (install flashrom via Homebrew)

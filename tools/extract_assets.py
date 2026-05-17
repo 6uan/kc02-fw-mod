@@ -14,11 +14,15 @@ def find_dump():
         return Path(sys.argv[1])
     if "KC02_DUMP" in os.environ:
         return Path(os.environ["KC02_DUMP"])
-    for p in [PROJECT / "firmware" / "original.bin", Path.home() / "dump1.bin"]:
-        if p.exists():
-            return p
+    p = PROJECT / "firmware" / "original.bin"
+    if p.exists():
+        return p
     print("Usage: extract_assets.py [dump.bin]")
-    print("  Or set KC02_DUMP env var, or place dump at firmware/original.bin")
+    print("")
+    print("  Dump your firmware first:")
+    print("    flashrom -p ch341a_spi -r firmware/original.bin")
+    print("")
+    print("  Or set KC02_DUMP env var, or pass the path as an argument.")
     sys.exit(1)
 
 dump_path = find_dump()
