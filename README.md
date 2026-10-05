@@ -1,6 +1,6 @@
 # KC02 Firmware Mod
 
-Replace the stock kids UI on the [HiMont KC02 (U8) Kids Instant Print Camera](https://www.himont.us/products/kids-instant-camera-u8) with custom themes. Swap every icon, background, boot screen, photo frame overlay, and digit — no soldering required for flashing (SD card), but you need a SPI programmer to dump the original firmware first.
+Replace the stock kids UI on the [HiMont KC02 (U8) Kids Instant Print Camera](https://www.himont.us/products/kids-instant-camera-u8) with custom themes. Swap every icon, background, boot screen, photo frame overlay, and digit — dump supported firmware over USB and flash via SD card, without opening the camera. A SPI programmer remains the fallback for unsupported firmware and recovery.
 
 Also sold on [Amazon](https://www.amazon.com/HiMont-Camera-Instant-Selfie-Digital/dp/B0DDGWPVJM) (not an affiliate link).
 
@@ -30,7 +30,7 @@ Here are some of the things and challenges I went through:
 ### Practical tips
 
 - **Buy two cameras.** Use one for testing and keep the other stock. If you brick the test unit, you can recover with the SPI programmer, but having a working reference saves time.
-- **Disconnect the battery before dumping.** The camera should not be powered during SPI reads/writes — remove or disconnect the battery first.
+- **Disconnect the battery when using a SPI programmer.** The camera must stay powered for USB dumps; disconnect the battery only for direct chip reads/writes.
 - **Keep your original dump backed up.** If the SD update routine gets corrupted (it lives in the app code, not the bootloader), the camera can't self-recover. The CH341A + your backup dump is the only way back.
 
 ## Hardware
@@ -47,10 +47,54 @@ This camera is sold under various brand names. If your camera has the same inter
 
 ## Requirements
 
-- Python 3.8+
+- Python 3.9+
 - Pillow (`pip install Pillow`) — for menu background compositing
-- A CH341A USB SPI programmer + SOIC8 clip — for dumping original firmware
+- A USB data cable, PyUSB and libusb (`python3 -m pip install pyusb libusb-package`) — for USB dumps
+- A CH341A USB SPI programmer + SOIC8 clip — optional fallback for dumping, required for recovery
 - A FAT32-formatted SD card — for flashing
+
+## USB device permissions and drivers
+
+Install the USB dependencies with `python3 -m pip install pyusb libusb-package` (Windows: `py -3 -m pip install pyusb libusb-package`). Use a virtual environment if your system Python is externally managed. `libusb-package` supplies the USB library, not OS permissions or a Windows device driver.
+
+Connect a USB **data** cable, power on the camera, and leave it idle on its USB/SD screen. **The SD card can stay inserted.** Eject/unmount any mounted camera volumes before dumping so the OS does not access them while the tool owns the mass-storage interface. Close camera/video apps and file-manager windows. Ensure the card does not contain `DestBin.bin` before powering on, since that filename triggers a firmware update.
+
+Supported mass-storage IDs are `0219:3280` and `1908:3283`. Webcam-only mode (`1908:3282`) cannot dump firmware.
+
+### Linux
+
+If necessary, install your distribution's libusb 1.0 runtime (`sudo apt install libusb-1.0-0` on Debian/Ubuntu). To grant USB access without running the tool as root, create `/etc/udev/rules.d/70-kc02.rules` with:
+
+```udev
+SUBSYSTEM=="usb", ATTR{idVendor}=="0219", ATTR{idProduct}=="3280", MODE="0660", TAG+="uaccess"
+SUBSYSTEM=="usb", ATTR{idVendor}=="1908", ATTR{idProduct}=="3283", MODE="0660", TAG+="uaccess"
+```
+
+Reload the rules, then unplug/reconnect the camera:
+
+```bash
+sudo udevadm control --reload-rules
+```
+
+`uaccess` grants access to the active local desktop user. For SSH/headless use, add `GROUP="plugdev"` (or a dedicated group) to both rules, join that group, and log in again. The tool detaches `usb-storage` from interface 4 while dumping and attempts to reattach it on exit.
+
+### macOS
+
+Use `libusb-package`, or install the system backend with `brew install libusb`. No udev rules or replacement Windows drivers apply. Eject the camera's mounted SD volumes in Finder/Disk Utility and close camera apps before dumping; the card can remain in the camera.
+
+If the interface remains busy, reconnect the camera and retry. Some macOS versions keep their mass-storage driver attached even after ejecting a volume, and libusb cannot detach it on every version. Running with `sudo` does not resolve driver ownership. If claiming remains blocked, use the SPI-programmer fallback below. macOS hardware validation is still pending.
+
+### Windows
+
+Install **WinUSB** for the camera's mass-storage interface using [Zadig](https://zadig.akeo.ie/):
+
+1. Enable **Options > List All Devices**.
+2. Select only the KC02 mass-storage interface (interface 4, sometimes shown as `MI_04`). Verify VID:PID `0219:3280` or `1908:3283`. Plain mass-storage mode may show the whole KC02 rather than `MI_04`; check its hardware ID.
+3. Choose **WinUSB** and install/replace the driver. This step requires administrator permission; normal dumping does not.
+
+Do not replace a webcam/audio interface, USB hub, or another disk's driver. Replacing the mass-storage driver disables ordinary camera SD-card access on this PC. To restore it, uninstall the replacement driver through Device Manager and reconnect the camera so Windows can load USB Mass Storage again.
+
+Use Python and libusb of matching architecture; `libusb-package` provides matching binaries for supported platforms. Running the dump as administrator does not fix a missing WinUSB driver. Windows hardware validation is still pending.
 
 ## Getting Started
 
@@ -58,8 +102,22 @@ This camera is sold under various brand names. If your camera has the same inter
 
 **This is required.** The build tool patches your theme assets onto your original firmware dump — it can't generate a firmware from scratch. Without the dump, nothing else works.
 
-We don't distribute the stock firmware (it's copyrighted). You need to dump it yourself using a CH341A SPI programmer and SOIC8 clip:
+We don't distribute the stock firmware (it's copyrighted). Dump your own camera over USB:
 
+```bash
+python3 -m pip install pyusb libusb-package
+python3 tools/dump_firmware.py  # saves firmware/original.bin
+```
+
+On Windows, use `py -3` instead of `python3`. Follow [USB device permissions and drivers](#usb-device-permissions-and-drivers), connect a USB **data** cable, power on, and leave the camera idle on its USB/SD screen. You do not need to remove the SD card. The self-contained script checks the researched firmware layout, loads a temporary RAM-only SPI-read adapter, and compares two complete reads before saving. It checks the boot header and SFAT marker; verbose mode also prints a SHA-256 checksum. It does not write flash. If the camera stops responding, power-cycle it before retrying.
+
+Use `-o backup.bin` to choose a destination, `--list` and `--device NUMBER` to select among cameras, or `--force` to replace an existing backup after a successful dump. `--single-read` skips the second comparison. Run `--help` for all options. Failed or interrupted dumps remove temporary data and any incomplete output created by this run. Existing backups remain untouched on dump failure.
+
+Save the dump to your computer, not directly to the camera's mounted SD card: the dumper takes ownership of the USB mass-storage interface, so camera volumes must be unmounted during dumping. Keep your backup under a name other than `DestBin.bin` to avoid accidental flashing; the dumper rejects that output filename because the camera treats it as an update on startup.
+
+**To deliberately restore the original firmware later**, copy the verified backup from that camera to a FAT32 SD card's root as `DestBin.bin`, then follow [the flashing steps](#4-flash-it). Keep a separate backup on your computer, use reliable power, and do not interrupt the update—it overwrites the bootloader too. SD restoration requires the currently installed firmware's update routine to work; if it is broken, use a SPI programmer instead.
+
+For unsupported firmware or USB driver issues, use a CH341A SPI programmer and SOIC8 clip instead. **Disconnect the camera battery first**:
 
 ```bash
 # macOS (install flashrom via Homebrew)
@@ -111,6 +169,7 @@ If `--sd` is passed to the build command, it copies to `/Volumes/NO NAME` (the d
 
 | Tool | What it does |
 |------|-------------|
+| `tools/dump_firmware.py` | Self-contained USB firmware backup CLI, with two-read verification |
 | `tools/build.py` | Build `DestBin.bin` from dump + theme assets. Supports button remapping, handler swaps, icon repositioning, and raw data patches. |
 | `tools/extract_assets.py` | Extract all assets from a firmware dump using the SFAT table |
 | `tools/compare.py` | Web UI (localhost:8080) — the main workspace for theme development |
