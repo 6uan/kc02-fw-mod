@@ -235,6 +235,31 @@ Either copied to RAM at init (flash copy ignored) or misidentified as key event 
 
 Place file on SD card root (FAT32) and power on. Camera checks for these filenames during boot.
 
+## V2 Firmware (build 2025/11/06)
+
+Different build found on later units (flash chip Zbit ZB25VQ32, JEDEC `5E 4016`).
+Same header format (`BLDR`, `0x55AA`, `0x01234567` markers, `SFAT` at 0x304) and
+same SD update filename (`DestBin.bin`, UTF-16 string at 0x07AC30). Unlike v1,
+the first 512 header bytes do not sum to 0 mod 256 (checksum byte 0x0C is 0) —
+the builder leaves the header untouched.
+
+| Range | Content |
+|-------|---------|
+| 0x09E000-0x09E2F0 | Asset table (same format as v1, 93 entries; entry 0 is empty) |
+| 0x0A690D-0x3C4F97 | Asset data |
+| 0x3C4F97-0x3FFFFF | Free (~236 KB) |
+
+Main menu is 7 full 320x240 JPEGs (#47-53), one per highlight state: APP,
+none, games, photo, playback, settings, video. The selection blinks by alternating
+the selected screen with the "none" screen (confirmed on hardware), so all 7 must
+be replaced together. Code addresses (dispatch tables, ADC button table, menu
+labels, USB 0xCD helper) are not mapped; the USB dumper's call to the v1 helper
+address crashes the camera (RAM only).
+
+Boot screen is #77 (320x240 JPEG, 11,715 B), power-off screen is #76
+(8,159 B) — both confirmed on hardware. The builder re-encodes oversized
+JPEGs to fit and copies `boot_screen` into the power-off slot if none is given.
+
 ## Memory Map
 
 | Range | Size | Content |

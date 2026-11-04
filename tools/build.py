@@ -140,6 +140,148 @@ SLOTS = [
     (91, 0x2FF8E2, 12344, "bmp", "volume_unsel",        ["settings", "unsel"]),
 ]
 
+# ─── V2 firmware (build 2025/11/06) ───
+# Later production units ship a different firmware: asset table at 0x09E000
+# (93 entries), full-screen menu JPEGs instead of icon overlays, 320x240 /
+# 160x120 photo frames. Only same-size asset replacement is supported here —
+# none of the code/table patches below have been mapped for this build.
+SLOTS_V2 = [
+    ( 1, 0x0A690D,   9562, "jpg", "blank_thumb",         ["screen"]),
+
+    # Photo frame overlays (mixed 320x240 / 160x120 JPEG)
+    ( 3, 0x1DA383,  17649, "jpg", "frame_1",             ["frame"]),
+    ( 4, 0x1DE874,  18741, "jpg", "frame_2",             ["frame"]),
+    ( 5, 0x1E31A9,  17975, "jpg", "frame_3",             ["frame"]),
+    ( 6, 0x1E77E0,  15150, "jpg", "frame_4",             ["frame"]),
+    ( 7, 0x1EB30E,  17314, "jpg", "frame_5",             ["frame"]),
+    ( 8, 0x1EF6B0,  16555, "jpg", "frame_6",             ["frame"]),
+    ( 9, 0x1F375B,  17536, "jpg", "frame_7",             ["frame"]),
+    (10, 0x1F7BDB,  19708, "jpg", "frame_8",             ["frame"]),
+    (11, 0x1FC8D7,  19114, "jpg", "frame_9",             ["frame"]),
+    (12, 0x201381,  19871, "jpg", "frame_10",            ["frame"]),
+    (13, 0x206120,  23519, "jpg", "frame_11",            ["frame"]),
+    (14, 0x20BCFF,  22249, "jpg", "frame_12",            ["frame"]),
+    (15, 0x2113E8,  15511, "jpg", "frame_13",            ["frame"]),
+    (16, 0x21507F,  24866, "jpg", "frame_14",            ["frame"]),
+    (17, 0x21B1A1,  25209, "jpg", "frame_15",            ["frame"]),
+    (18, 0x22141A,  18347, "jpg", "frame_16",            ["frame"]),
+    (19, 0x225BC5,  27345, "jpg", "frame_17",            ["frame"]),
+    (20, 0x22C696,  20817, "jpg", "frame_18",            ["frame"]),
+    (21, 0x2317E7,  23815, "jpg", "frame_19",            ["frame"]),
+    (22, 0x2374EE,  20096, "jpg", "frame_20",            ["frame"]),
+    (23, 0x23C36E,  17979, "jpg", "frame_21",            ["frame"]),
+    (24, 0x2409A9,  20605, "jpg", "frame_22",            ["frame"]),
+    (25, 0x245A26,  22618, "jpg", "frame_23",            ["frame"]),
+
+    # Game icons (120x120 BMP) and game backgrounds
+    (26, 0x24B280,  43256, "bmp", "game_1",              ["game"]),
+    (27, 0x255B78,  43254, "bmp", "game_2",              ["game"]),
+    (28, 0x26046E,  43256, "bmp", "game_3",              ["game"]),
+    (29, 0x26AD66,  43256, "bmp", "game_4",              ["game"]),
+    (30, 0x27565E,  43256, "bmp", "game_5",              ["game"]),
+    (31, 0x27FF56,  43256, "bmp", "game_6",              ["game"]),
+    (32, 0x28A84E,  16192, "jpg", "game_bg_1",           ["screen"]),
+    (33, 0x28E78E,  10815, "jpg", "game_bg_2",           ["screen"]),
+    (34, 0x2911CD,  32313, "jpg", "game_bg_3",           ["screen"]),
+    (35, 0x299006,  25629, "jpg", "game_bg_4",           ["screen"]),
+    (43, 0x2A7FB7,   7035, "jpg", "block_game_bg",       ["screen"]),
+
+    # Playback controls (48x32 BMP)
+    (45, 0x2A9C58,   4662, "bmp", "rewind",              ["control"]),
+    (46, 0x2AAE8E,   4662, "bmp", "forward",             ["control"]),
+
+    # Main menu: one full 320x240 JPEG per highlighted item (3x2 grid)
+    (47, 0x2AC0C4,  37688, "jpg", "menu_apps_sel",       ["menu"]),
+    (48, 0x2B53FC,  36882, "jpg", "menu_none",           ["menu"]),
+    (49, 0x2BE40E,  37088, "jpg", "menu_games_sel",      ["menu"]),
+    (50, 0x2C74EE,  37483, "jpg", "menu_photo_sel",      ["menu"]),
+    (51, 0x2D0759,  36612, "jpg", "menu_playback_sel",   ["menu"]),
+    (52, 0x2D965D,  36927, "jpg", "menu_settings_sel",   ["menu"]),
+    (53, 0x2E269C,  37269, "jpg", "menu_video_sel",      ["menu"]),
+
+    # Counter digits (16x32 BMP, chroma #808080)
+    (60, 0x30B46B,   1590, "bmp", "digit_0",             ["digit"]),
+    (61, 0x30BAA1,   1590, "bmp", "digit_1",             ["digit"]),
+    (62, 0x30C0D7,   1590, "bmp", "digit_2",             ["digit"]),
+    (63, 0x30C70D,   1590, "bmp", "digit_3",             ["digit"]),
+    (64, 0x30CD43,   1590, "bmp", "digit_4",             ["digit"]),
+    (65, 0x30D379,   1590, "bmp", "digit_5",             ["digit"]),
+    (66, 0x30D9AF,   1590, "bmp", "digit_6",             ["digit"]),
+    (67, 0x30DFE5,   1590, "bmp", "digit_7",             ["digit"]),
+    (68, 0x30E61B,   1590, "bmp", "digit_8",             ["digit"]),
+    (69, 0x30EC51,   1590, "bmp", "digit_9",             ["digit"]),
+    (70, 0x30F287,   1590, "bmp", "blank",               ["digit"]),
+    (71, 0x30F8BD,   1590, "bmp", "colon",               ["digit"]),
+    (72, 0x30FEF3,   1590, "bmp", "slash",               ["digit"]),
+
+    # Boot / power-off screens (confirmed on hardware) and status screens
+    (76, 0x35D965,   8159, "jpg", "power_off_screen",    ["screen"]),
+    (77, 0x35F944,  11715, "jpg", "boot_screen",         ["screen"]),
+    (80, 0x383D19,  37688, "bmp", "printer_1",           ["sel"]),
+    (81, 0x38D051,  37688, "bmp", "printer_2",           ["sel"]),
+    (82, 0x396389,    696, "bmp", "indicator_1",         ["indicator"]),
+    (83, 0x396641,    696, "bmp", "indicator_2",         ["indicator"]),
+    (86, 0x3ABD86,  16998, "jpg", "charging_1",          ["screen"]),
+    (87, 0x3AFFEC,  17508, "jpg", "charging_2",          ["screen"]),
+    (88, 0x3B4450,  17728, "jpg", "charging_3",          ["screen"]),
+    (89, 0x3B8990,  17493, "jpg", "charging_4",          ["screen"]),
+    (90, 0x3BCDE5,  17656, "jpg", "charging_5",          ["screen"]),
+    (91, 0x3C12DD,   7426, "jpg", "insert_sd",           ["screen"]),
+    (92, 0x3C2FDF,   8120, "jpg", "video_rec",           ["screen"]),
+]
+
+# ─── Firmware variants ───
+# A dump is only built if every slot of exactly one variant matches its asset
+# table (offset, size and file magic). Unknown firmware is refused, since
+# writing assets at the wrong offsets overwrites code and bricks the camera.
+VARIANTS = {
+    "v1": {
+        "desc": "researched KC02 firmware (97 assets, icon-overlay menu)",
+        "table": 0x0D3200,
+        "slots": SLOTS,
+        "code_patches": True,
+    },
+    "v2": {
+        "desc": "KC02 firmware build 2025/11/06 (93 assets, full-screen menus)",
+        "table": 0x09E000,
+        "slots": SLOTS_V2,
+        "code_patches": False,
+    },
+}
+
+
+def read_asset_table(fw, base):
+    """Parse an asset table: u32 total size, u32 ?, then (u32 rel_offset, u32 size) entries."""
+    table_size = struct.unpack_from('<I', fw, base)[0]
+    if table_size < 8 or (table_size - 8) % 8 or base + table_size > len(fw):
+        return None
+    entries = []
+    for i in range((table_size - 8) // 8):
+        rel, size = struct.unpack_from('<II', fw, base + 8 + i * 8)
+        if base + rel + size > len(fw):
+            return None
+        entries.append((base + rel, size))
+    return entries
+
+
+def variant_matches(fw, variant):
+    entries = read_asset_table(fw, variant["table"])
+    if entries is None:
+        return False
+    for idx, offset, size, fmt, name, tags in variant["slots"]:
+        if idx >= len(entries) or entries[idx] != (offset, size):
+            return False
+        magic = b'\xff\xd8' if fmt == "jpg" else b'BM'
+        if fw[offset:offset + 2] != magic:
+            return False
+    return True
+
+
+def detect_variant(fw):
+    """Return the name of the variant whose slot table matches this dump exactly, or None."""
+    matches = [name for name, v in VARIANTS.items() if variant_matches(fw, v)]
+    return matches[0] if len(matches) == 1 else None
+
 # ─── Text label offsets (menu labels in string resource) ───
 MENU_LABEL_OFFSETS = {
     "Settings": 0x239C5A,
@@ -235,6 +377,7 @@ EXPECTED_DIMS = {
     "control":   (48, 32),
     "digit":     (16, 32),
     "frame":     (1280, 720),
+    "indicator": (10, 20),
     "bg":        (320, 240),
     "screen":    (320, 240),
     "menu":      (320, 240),
@@ -248,7 +391,8 @@ def validate_asset(filepath, slot):
     data = filepath.read_bytes()
 
     if len(data) > expected_size:
-        warnings.append(f"oversized {len(data):,}B > {expected_size:,}B (will truncate)")
+        action = "will re-encode" if fmt == "jpg" else "will truncate"
+        warnings.append(f"oversized {len(data):,}B > {expected_size:,}B ({action})")
     elif len(data) < expected_size and fmt == "bmp":
         warnings.append(f"undersized {len(data):,}B < {expected_size:,}B (will zero-pad {expected_size - len(data)}B)")
 
@@ -370,8 +514,8 @@ def _apply_bg_effect(rgb_image, effect):
     return rgb_image
 
 
-def generate_menu_bg(asset_dir, bg_color=(0, 0, 0), effect=None):
-    """Composite menu icons onto a background to create menu_bg JPEG."""
+def _render_menu(asset_dir, bg_color=(0, 0, 0), effect=None):
+    """Composite the 6 menu icons onto menu_bg_base. Returns (rgb, placed, offsets, effect)."""
     from PIL import Image
 
     CHROMA_KEY = (140, 140, 140)  # #8C8C8C
@@ -407,9 +551,15 @@ def generate_menu_bg(asset_dir, bg_color=(0, 0, 0), effect=None):
     else:
         bg = Image.new('RGBA', (WIDTH, HEIGHT), bg_color + (255,))
     bg = Image.alpha_composite(bg, icons_layer)
+    rgb = _apply_bg_effect(bg.convert('RGB'), effect)
+    return rgb, placed, offsets, effect
+
+
+def generate_menu_bg(asset_dir, bg_color=(0, 0, 0), effect=None):
+    """Composite menu icons onto a background to create menu_bg JPEG."""
+    rgb, placed, offsets, effect = _render_menu(asset_dir, bg_color, effect)
 
     output = Path(asset_dir) / "07_menu_bg_320x240.jpg"
-    rgb = _apply_bg_effect(bg.convert('RGB'), effect)
     slot = next(s for s in SLOTS if s[4] == "menu_bg")
     max_size = slot[2]
 
@@ -429,9 +579,72 @@ def generate_menu_bg(asset_dir, bg_color=(0, 0, 0), effect=None):
     return output
 
 
-def find_assets(asset_dir):
+# ─── V2 menu screens ───
+# V2 draws no icon overlay: each highlight state is a complete JPEG. They are
+# rendered like the v1 menu_bg, plus an outline around the selected cell.
+# The firmware blinks the selection by alternating <item>_sel with menu_none,
+# so all 7 must come from the same theme or the whole screen flashes.
+# The v2 "APP" cell (top right) gets the music icon.
+MENU_V2_STATES = {
+    "menu_none": None,
+    "menu_photo_sel": 0, "menu_video_sel": 1, "menu_apps_sel": 2,
+    "menu_playback_sel": 3, "menu_games_sel": 4, "menu_settings_sel": 5,
+}
+MENU_V2_CELLS = [(10, 24, 104, 117), (111, 24, 208, 117), (214, 24, 303, 117),
+                 (10, 122, 104, 216), (111, 122, 208, 216), (214, 122, 303, 216)]
+MENU_V2_HIGHLIGHT = (232, 140, 48)
+
+
+def generate_menu_screens_v2(asset_dir):
+    """Render all 7 v2 menu states. Returns {slot_name: jpeg_bytes}, each fitted to its slot."""
+    import io
+    from PIL import ImageDraw
+
+    base, placed, _, effect = _render_menu(asset_dir)
+    slot_lookup = {s[4]: s for s in SLOTS_V2}
+    out = {}
+    for name, sel in MENU_V2_STATES.items():
+        img = base.copy()
+        if sel is not None:
+            draw = ImageDraw.Draw(img)
+            x0, y0, x1, y1 = MENU_V2_CELLS[sel]
+            for k in range(3):
+                draw.rectangle((x0 - k, y0 - k, x1 + k, y1 + k), outline=MENU_V2_HIGHLIGHT)
+        max_size = slot_lookup[name][2]
+        for quality in range(95, 10, -5):
+            buf = io.BytesIO()
+            img.save(buf, "JPEG", quality=quality, subsampling="4:2:0")
+            if buf.tell() <= max_size:
+                break
+        out[name] = buf.getvalue()
+    print(f"  [OK] {len(out)} v2 menu screens generated — {placed} icons, effect={effect}")
+    return out
+
+
+def fit_to_slot(data, size, fmt):
+    """Return data padded to exactly `size` bytes. Oversized JPEGs are re-encoded
+    (baseline, 4:2:0) at decreasing quality until they fit; truncating would corrupt them."""
+    import io
+    if len(data) > size and fmt == "jpg":
+        from PIL import Image
+        img = Image.open(io.BytesIO(data)).convert("RGB")
+        for quality in range(95, 10, -5):
+            buf = io.BytesIO()
+            img.save(buf, "JPEG", quality=quality, subsampling="4:2:0")
+            if buf.tell() <= size:
+                break
+        print(f"  [FIT] re-encoded {len(data):,}B → {buf.tell():,}B (quality {quality}) for {size:,}B slot")
+        data = buf.getvalue()
+    if len(data) > size:
+        return data[:size]
+    if fmt == "jpg" and data[-2:] == b'\xff\xd9':
+        return data[:-2] + b'\xff' * (size - len(data)) + b'\xff\xd9'
+    return data + b'\x00' * (size - len(data))
+
+
+def find_assets(asset_dir, slots=SLOTS):
     """Scan directory for files matching slot names or aliases."""
-    slot_lookup = {s[4]: s for s in SLOTS}  # name → slot tuple
+    slot_lookup = {s[4]: s for s in slots}  # name → slot tuple
     matched = {}
 
     for f in sorted(Path(asset_dir).iterdir()):
@@ -455,7 +668,7 @@ def find_assets(asset_dir):
         if stem.startswith("asset_"):
             try:
                 idx = int(stem.split("_")[1])
-                for s in SLOTS:
+                for s in slots:
                     if s[0] == idx:
                         matched[s[4]] = f
                         break
@@ -489,13 +702,44 @@ def build(args):
             print(f"  Available themes: {', '.join(d.name for d in (PROJECT / 'themes').iterdir() if d.is_dir())}")
         sys.exit(1)
 
-    matched = find_assets(asset_dir)
-    slot_lookup = {s[4]: s for s in SLOTS}
+    variant_name = detect_variant(fw)
+    if variant_name is None:
+        print(f"ERROR: {DUMP} does not match any known firmware layout.")
+        print(f"  Known: " + "; ".join(f"{n} = {v['desc']}" for n, v in VARIANTS.items()))
+        print(f"  Building would write assets at wrong offsets and brick the camera.")
+        sys.exit(1)
+    variant = VARIANTS[variant_name]
+    slots = variant["slots"]
+
+    if not variant["code_patches"]:
+        requested = [opt for opt in ("swap_handler", "swap_asset", "set_key_handler", "remap_button", "move_icons")
+                     if getattr(args, opt, None)]
+        if requested:
+            print(f"ERROR: --{', --'.join(o.replace('_', '-') for o in requested)} not supported on "
+                  f"{variant_name} firmware (code/table offsets not mapped)")
+            sys.exit(1)
+
+    matched = find_assets(asset_dir, slots)
+    slot_lookup = {s[4]: s for s in slots}
 
     print(f"\nSource:  {DUMP}")
+    print(f"Variant: {variant_name} — {variant['desc']}")
     print(f"Assets:  {asset_dir}")
     print(f"Output:  {OUTPUT}")
-    print(f"Matched: {len(matched)} / {len(SLOTS)} slots")
+
+    # V2 menus are full-screen per highlight state; render any not supplied as files
+    if variant_name == "v2" and find_menu_bg_base(asset_dir):
+        missing = [n for n in MENU_V2_STATES if n not in matched]
+        if missing:
+            menu_dir = OUTPUT.parent / "menu_v2"
+            menu_dir.mkdir(parents=True, exist_ok=True)
+            for name, data in generate_menu_screens_v2(asset_dir).items():
+                if name in missing:
+                    path = menu_dir / f"{name}.jpg"
+                    path.write_bytes(data)
+                    matched[name] = path
+
+    print(f"Matched: {sum(n in slot_lookup for n in matched)} / {len(slots)} slots")
     print()
 
     patched = 0
@@ -518,18 +762,7 @@ def build(args):
 
         data = filepath.read_bytes()
 
-        # Handle size mismatches
-        if len(data) == expected_size:
-            fw[offset:offset + expected_size] = data
-        elif len(data) < expected_size:
-            if fmt == "jpg" and data[-2:] == b'\xff\xd9':
-                pad = expected_size - len(data)
-                data = data[:-2] + b'\xff' * pad + b'\xff\xd9'
-            else:
-                data = data + b'\x00' * (expected_size - len(data))
-            fw[offset:offset + expected_size] = data
-        elif len(data) > expected_size:
-            fw[offset:offset + expected_size] = data[:expected_size]
+        fw[offset:offset + expected_size] = fit_to_slot(data, expected_size, fmt)
 
         if not args.dry_run:
             patched += 1
@@ -539,17 +772,13 @@ def build(args):
     if warn_count:
         print(f"\n  {warn_count} warning(s) — assets patched anyway")
 
-    # Also patch boot_screen into slot 2 if only one boot screen provided
-    if "boot_screen" in matched and "boot_screen_2" not in matched:
-        s = slot_lookup["boot_screen_2"]
-        data = matched["boot_screen"].read_bytes()
-        if len(data) <= s[2]:
-            if len(data) < s[2] and data[-2:] == b'\xff\xd9':
-                pad = s[2] - len(data)
-                data = data[:-2] + b'\xff' * pad + b'\xff\xd9'
-            fw[s[1]:s[1] + s[2]] = data[:s[2]]
+    # Reuse boot_screen for the second boot screen (v1) / power-off screen (v2) if not provided
+    for target in ("boot_screen_2", "power_off_screen"):
+        if "boot_screen" in matched and target in slot_lookup and target not in matched:
+            s = slot_lookup[target]
+            fw[s[1]:s[1] + s[2]] = fit_to_slot(matched["boot_screen"].read_bytes(), s[2], s[3])
             patched += 1
-            print(f"  [OK] #{s[0]:02d} @ 0x{s[1]:06X} — boot_screen_2 (auto-copied)")
+            print(f"  [OK] #{s[0]:02d} @ 0x{s[1]:06X} — {target} (auto-copied from boot_screen)")
 
     # Dispatch table handler swaps
     if hasattr(args, 'swap_handler') and args.swap_handler:
@@ -706,8 +935,8 @@ def build(args):
             fw[off:off + len(data)] = data
             print(f"  [OK] 0x{off:06X}: {old.hex()} → {data.hex()} ({len(data)}B)")
 
-    # Remove menu text labels
-    if args.no_text:
+    # Remove menu text labels (v1 only: v2 menus have no separate text labels)
+    if args.no_text and variant["code_patches"]:
         print(f"\n--- Text Label Removal ---")
         text_count = 0
         for label, offset in MENU_LABEL_OFFSETS.items():
@@ -724,6 +953,8 @@ def build(args):
     assert fw[4:8] == b'BLDR'
     assert fw[0x1FE:0x200] == b'\x55\xAA'
     assert fw[0x304:0x308] == b'SFAT'
+    assert read_asset_table(fw, variant["table"]) == read_asset_table(DUMP.read_bytes(), variant["table"]), \
+        "asset table changed"
 
     orig_header = DUMP.read_bytes()[:512]
     if fw[0:512] != bytearray(orig_header):
@@ -732,8 +963,8 @@ def build(args):
         fw[0x0C] = (256 - hdr_sum) % 256
         print("  [FIXED] Header checksum recalculated")
 
-    hdr_sum = sum(fw[0:512]) % 256
-    assert hdr_sum == 0
+        # V1 headers sum to 0; the v2 header doesn't, so only a changed header is checked
+        assert sum(fw[0:512]) % 256 == 0
     print(f"  [PASS] All checks OK — {patched} assets patched")
 
     if args.dry_run:
@@ -766,10 +997,15 @@ def build(args):
 
 def list_slots(args):
     """Show all available slots."""
+    name = args.variant or (detect_variant(DUMP.read_bytes()) if DUMP.exists() else None) or "v1"
+    variant = VARIANTS[name]
+    print(f"Variant {name} — {variant['desc']}\n")
     print(f"{'#':>3} {'Offset':>10} {'Size':>8} {'Fmt':>4} {'Name':<25} {'Tags'}")
     print("-" * 70)
-    for idx, offset, size, fmt, name, tags in SLOTS:
-        print(f"{idx:3d} 0x{offset:06X} {size:8,} {fmt:>4} {name:<25} {','.join(tags)}")
+    for idx, offset, size, fmt, slot_name, tags in variant["slots"]:
+        print(f"{idx:3d} 0x{offset:06X} {size:8,} {fmt:>4} {slot_name:<25} {','.join(tags)}")
+    if not variant["code_patches"]:
+        return
     print(f"\nMenu text labels:")
     for label, offset in MENU_LABEL_OFFSETS.items():
         print(f"  {label:<12} @ 0x{offset:06X}")
@@ -807,6 +1043,7 @@ if __name__ == "__main__":
                               "Presets: 'column' (vertical stack), 'diagonal', 'stock' (reset)")
 
     list_p = sub.add_parser("list", help="List all asset slots")
+    list_p.add_argument("--variant", choices=VARIANTS, help="Firmware variant (default: detect from dump)")
 
     menubg_p = sub.add_parser("gen-menu-bg", help="Generate menu background from current icons")
     menubg_p.add_argument("--theme", default="modern_pixel_light", help="Theme directory name")

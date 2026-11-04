@@ -45,6 +45,17 @@ Here are some of the things and challenges I went through:
 
 This camera is sold under various brand names. If your camera has the same internals (check the SoC and flash chip), this toolkit will likely work.
 
+### Firmware variants
+
+Units ship with different firmware builds. `tools/build.py` detects the variant from your dump and refuses to build for an unknown layout.
+
+| Variant | Identify by | Supported |
+|---------|-------------|-----------|
+| `v1` | Asset table at `0x0D3200` (97 assets), icon-overlay menu | Everything below |
+| `v2` | Build date `2025/11/06`, asset table at `0x09E000` (93 assets), one full-screen JPEG per menu highlight state; seen with a Zbit ZB25VQ32 flash chip | Asset replacement only (menu screens, boot/power-off screens, digits, playback controls, frames, game icons). No button/handler/label patches. |
+
+On `v2` the USB dumper doesn't work: the routine it calls isn't present in this build, and it can't tell the firmware apart before that first call, so the camera hangs (RAM only; power-cycle to recover). Use a SPI programmer instead. The builder renders the seven `v2` menu screens from the theme's icons and `menu_bg_base`, outlining the selected cell, and also writes them to `patched/menu_v2/` for preview.
+
 ## Requirements
 
 - Python 3.9+

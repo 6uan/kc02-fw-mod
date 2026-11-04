@@ -7,7 +7,8 @@ import os
 from pathlib import Path
 
 PROJECT = Path(__file__).resolve().parent.parent
-TABLE_BASE = 0x0D3200
+# Asset table location per firmware variant (see VARIANTS in build.py)
+TABLE_BASES = {"v1": 0x0D3200, "v2": 0x09E000}
 
 def find_dump():
     if len(sys.argv) > 1:
@@ -31,9 +32,24 @@ out_dir = PROJECT / "originals"
 with open(dump_path, "rb") as f:
     data = f.read()
 
+def table_valid(base):
+    table_size = struct.unpack_from("<I", data, base)[0]
+    if table_size < 16 or (table_size - 8) % 8 or base + table_size > len(data):
+        return False
+    for i in range((table_size - 8) // 8):
+        rel_offset, size = struct.unpack_from("<II", data, base + 8 + i * 8)
+        if base + rel_offset + size > len(data):
+            return False
+    return True
+
+found = [(name, base) for name, base in TABLE_BASES.items() if table_valid(base)]
+if len(found) != 1:
+    print("Unknown firmware layout: no asset table at a known location.")
+    sys.exit(1)
+variant, TABLE_BASE = found[0]
 table_size = struct.unpack_from("<I", data, TABLE_BASE)[0]
 num_entries = (table_size - 8) // 8
-print(f"Asset table at 0x{TABLE_BASE:06X}, size={table_size}, entries={num_entries}")
+print(f"Firmware {variant}: asset table at 0x{TABLE_BASE:06X}, size={table_size}, entries={num_entries}")
 
 entries = []
 for i in range(num_entries):
