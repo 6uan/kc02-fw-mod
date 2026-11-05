@@ -54,7 +54,11 @@ Units ship with different firmware builds. `tools/build.py` detects the variant 
 | `v1` | Asset table at `0x0D3200` (97 assets), icon-overlay menu | Everything below |
 | `v2` | Build date `2025/11/06`, asset table at `0x09E000` (93 assets), one full-screen JPEG per menu highlight state; seen with a Zbit ZB25VQ32 flash chip | Asset replacement only (menu screens, boot/power-off screens, digits, playback controls, frames, game icons). No button/handler/label patches. |
 
-On `v2` the USB dumper doesn't work: the routine it calls isn't present in this build, and it can't tell the firmware apart before that first call, so the camera hangs (RAM only; power-cycle to recover). Use a SPI programmer instead. The builder renders the seven `v2` menu screens from the theme's icons and `menu_bg_base`, outlining the selected cell, and also writes them to `patched/menu_v2/` for preview.
+On `v2` the application-mode `tools/dump_firmware.py` doesn't work: the routine it calls isn't present in this build, and it can't tell the firmware apart before that first call, so the camera hangs (RAM only; power-cycle to recover).
+
+A separate [factory-loader backup method](docs/USB_LOADER_BACKUP.md) avoids application addresses and has recovered two matching full reads from a `2026/0526 v1.0` unit on macOS with the exact `Video050Loader` profile. This does not establish support for the `2025/11/06` v2 unit or classify the newer unit's application layout. A SPI programmer remains the fallback for unsupported loaders and recovery.
+
+The builder renders the seven `v2` menu screens from the theme's icons and `menu_bg_base`, outlining the selected cell, and also writes them to `patched/menu_v2/` for preview.
 
 ## Requirements
 
@@ -93,7 +97,9 @@ sudo udevadm control --reload-rules
 
 Use `libusb-package`, or install the system backend with `brew install libusb`. No udev rules or replacement Windows drivers apply. Eject the camera's mounted SD volumes in Finder/Disk Utility and close camera apps before dumping; the card can remain in the camera.
 
-If the interface remains busy, reconnect the camera and retry. Some macOS versions keep their mass-storage driver attached even after ejecting a volume, and libusb cannot detach it on every version. Running with `sudo` does not resolve driver ownership. If claiming remains blocked, use the SPI-programmer fallback below. macOS hardware validation is still pending.
+Some macOS versions keep their mass-storage driver attached even after unmounting a volume. Administrator execution alone does not release that driver. The [factory-loader tool](docs/USB_LOADER_BACKUP.md) maps and unmounts only the camera's card, then explicitly captures the driver under `sudo`; this sequence was hardware-validated on one Mac with PyUSB 1.3.1 and libusb 1.0.30.
+
+Capture affects the whole camera, and returning to normal card access can require a power-cycle. The original application-address dump path's macOS hardware validation is still pending. If a vendor command fails, preserve its report and stop rather than retrying with guessed addresses. Use the SPI-programmer fallback for unsupported loaders or unresolved access failures.
 
 ### Windows
 
@@ -113,7 +119,12 @@ Use Python and libusb of matching architecture; `libusb-package` provides matchi
 
 **This is required.** The build tool patches your theme assets onto your original firmware dump — it can't generate a firmware from scratch. Without the dump, nothing else works.
 
-We don't distribute the stock firmware (it's copyrighted). Dump your own camera over USB:
+We don't distribute the stock firmware (it's copyrighted). Choose the backup path before sending a firmware-specific command:
+
+- For the researched application layout, use `tools/dump_firmware.py` below.
+- For the separately tested `Video050Loader` factory profile on macOS, follow [factory USB loader backup](docs/USB_LOADER_BACKUP.md). That tool checks the exact loader identity, verifies a pinned external RAM driver, identifies flash capacity, and requires two matching full reads. It does not assume that a menu label of `v1.0` identifies the researched application layout.
+
+For the researched application layout:
 
 ```bash
 python3 -m pip install pyusb libusb-package
@@ -181,6 +192,7 @@ If `--sd` is passed to the build command, it copies to `/Volumes/NO NAME` (the d
 | Tool | What it does |
 |------|-------------|
 | `tools/dump_firmware.py` | Self-contained USB firmware backup CLI, with two-read verification |
+| `tools/dump_firmware_loader.py` | Separate macOS factory-loader backup for the exact Video050Loader profile; pinned external RAM driver and two full reads |
 | `tools/build.py` | Build `DestBin.bin` from dump + theme assets. Supports button remapping, handler swaps, icon repositioning, and raw data patches. |
 | `tools/extract_assets.py` | Extract all assets from a firmware dump using the SFAT table |
 | `tools/compare.py` | Web UI (localhost:8080) — the main workspace for theme development |

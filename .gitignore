@@ -11,6 +11,7 @@ __pycache__/
 
 # Firmware dumps (users provide their own)
 firmware/*.bin
+firmware/loader-backups/
 
 # Extracted originals (copyrighted — re-extract with tools/extract_assets.py)
 originals/*
